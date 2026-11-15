@@ -175,7 +175,12 @@
   const minF = () => +minT.value;
   function passes(d) {
     const term = q.value.trim().toLowerCase(), st = stSel.value, m = minF(), lf = landSel.value;
-    if (lf && !(d.land && (lf === 'open' ? d.land[0] === 'P' : 'PRU'.includes(d.land[0])))) return false;
+    if (lf) {
+      const c = d.land ? d.land[0] : '';
+      // private = no PAD-US parcel (usually private), private ranches, or nonprofit preserves
+      const ok = lf === 'open' ? c === 'P' : lf === 'public' ? 'PRU'.includes(c) && c !== '' : c === '' || c === 'V' || c === 'N';
+      if (!ok) return false;
+    }
     return show[d.cls] && (!st || d.st === st) && (!term || d.name.toLowerCase().includes(term)) && (m <= 60 || (d.f != null && d.f >= m));
   }
   function update() {

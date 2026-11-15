@@ -7,7 +7,7 @@
 <meta name="description" content="Interactive map of 1,661 US thermal springs from NOAA's Thermal Springs List, with topo, satellite and street basemaps.">
 <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
 <link rel="stylesheet" href="vendor/leaflet/leaflet.css">
-<link rel="stylesheet" href="style.css?v=8">
+<link rel="stylesheet" href="style.css?v=9">
 </head>
 <body>
 <header>
@@ -45,8 +45,9 @@
       </div>
       <select id="land" title="Filter by land ownership (USGS PAD-US)">
         <option value="">Land: any ownership</option>
-        <option value="public">Public land only</option>
-        <option value="open">Public land, open access only</option>
+        <option value="public">On public land</option>
+        <option value="open">On public land &amp; open access</option>
+        <option value="private">On private land</option>
       </select>
       <label class="inview"><input type="checkbox" id="inView" checked> Only list springs in the current map view</label>
       <div class="range">Min temp <input type="range" id="minT" min="60" max="310" step="1" value="60"><span id="minTv"></span></div>
@@ -59,6 +60,6 @@
   </aside>
 </div>
 <script src="vendor/leaflet/leaflet.js"></script>
-<script src="app.js?v=8"></script>
+<script src="app.js?v=9"></script>
 </body>
 </html>
