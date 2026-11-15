@@ -103,7 +103,7 @@
       locateCtl.btn.classList.remove('busy');
       me = [p.coords.latitude, p.coords.longitude];
       if (meMarker) meMarker.setLatLng(me);
-      else meMarker = L.circleMarker(me, {radius:7, color:'#fff', weight:2.5, fillColor:'#1a73e8', fillOpacity:1, renderer}).bindTooltip('You are here').addTo(map);
+      else { meMarker = L.circleMarker(me, {radius:7, color:'#fff', weight:2.5, fillColor:'#1a73e8', fillOpacity:1, renderer}).addTo(map); meMarker.bindPopup('You are here'); }
       if (zoom) map.setView(me, Math.max(map.getZoom(), 8));
       update();
     }, err => {
@@ -125,6 +125,9 @@
     return 2 * R * Math.asin(Math.sqrt(a));
   }
 
+  // Hover labels only where a real hover exists; on touch screens a tap would show the label and the popup together.
+  const canHover = !!(window.matchMedia && matchMedia('(hover: hover) and (pointer: fine)').matches);
+
   // ---------- State ----------
   let S = [], unit = store.get('wt-unit', 'F'), sel = null, current = [];
   const show = {B:true, H:true, W:true, '':true};
@@ -140,7 +143,7 @@
     // markers (hotter drawn on top)
     S.slice().sort((a, b) => ORDER[a.cls] - ORDER[b.cls]).forEach(d => {
       d.m = L.circleMarker([d.lat, d.lon], {renderer, radius:5, weight:1, color:'#000', opacity:.55, fillColor:COLORS[d.cls], fillOpacity:.95});
-      d.m.bindTooltip(() => esc(title(d.name)) + ' · ' + fmt(d), {direction:'top', offset:[0,-4]});
+      if (canHover) d.m.bindTooltip(() => esc(title(d.name)) + ' · ' + fmt(d), {direction:'top', offset:[0,-4]});
       d.m.on('click', () => select(d, false));
     });
     // state dropdown
