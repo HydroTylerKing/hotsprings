@@ -102,10 +102,14 @@ aside{width:340px;flex:none;background:#fff;border-left:1px solid var(--line);di
 
 /* Collapsed results: list hidden, map gets the room */
 .app.rc #list,.app.rc .thead,.app.rc .foot{display:none!important}
+/* Desktop: the panel always floats over the map's left side, open or collapsed */
 @media (min-width:761px){
-  .app.rc aside{position:absolute;z-index:1001;top:10px;left:56px;width:340px;max-height:calc(100% - 40px);border:1px solid #9aa3ad;border-radius:6px;overflow:auto;box-shadow:0 3px 12px rgba(0,0,0,.18)}
-  .app.rc{position:relative}
-  .app.rc .panel-h:first-child{border-radius:6px 6px 0 0}
+  .app{position:relative}
+  aside{position:absolute;z-index:1001;top:10px;left:56px;width:360px;max-height:calc(100% - 40px);border:1px solid #9aa3ad;border-radius:6px;overflow:hidden;box-shadow:0 3px 12px rgba(0,0,0,.18)}
+  .app.rc aside{overflow:auto}
+  aside .panel-h:first-child{border-radius:6px 6px 0 0}
+  .app.max aside{position:static;width:100%;max-height:none;border:0;border-radius:0;box-shadow:none;overflow:hidden}
+  .app.max aside .panel-h:first-child{border-radius:0}
 }
 /* Expanded table */
 .app.max #mapwrap{display:none}
