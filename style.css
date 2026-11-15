@@ -1,14 +1,15 @@
 :root{
-  --navy:#3d2a5c; --navy2:#5b3f86; --leaf:#4f7a3a;
-  --paper:#f4f1ea; --ink:#1d2430; --muted:#5d6675; --line:#c9c3b6;
+  /* palette sampled from the Wildflower Touring badge */
+  --navy:#2c4a6e; --navy2:#3a597c; --leaf:#51634d; --poppy:#be6b47; --sky:#b4d8ea; --tint:#e6eff5;
+  --paper:#f2f0e4; --ink:#1d2430; --muted:#5d6675; --line:#c9c3b6;
   --boil:#d7191c; --hot:#f28c28; --warm:#f5d327; --na:#222;
 }
 *{box-sizing:border-box}
 html,body{margin:0;height:100%;font:14px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--paper)}
-header{background:linear-gradient(var(--navy2),var(--navy));color:#fff;padding:8px 14px;display:flex;align-items:center;gap:12px;border-bottom:3px solid #e8b13a;height:56px}
-.seal{width:36px;height:36px;flex:none}
-header h1{font-size:17px;margin:0;font-weight:600;letter-spacing:.2px}
-header .sub{font-size:11.5px;opacity:.8}
+header{background:var(--paper);color:var(--navy);padding:6px 14px;display:flex;align-items:center;gap:12px;border-bottom:3px solid var(--navy2);box-shadow:inset 0 -5px 0 -2px var(--poppy);height:56px}
+.seal{width:46px;height:46px;flex:none}
+header h1{font-size:17px;margin:0;font-weight:800;letter-spacing:.6px;text-transform:uppercase;color:var(--navy2)}
+header .sub{font-size:11.5px;color:var(--muted)}
 .app{display:flex;height:calc(100% - 56px)}
 #mapwrap{position:relative;flex:1;min-width:0}
 #map{position:absolute;inset:0;background:#dfe9f1}
@@ -56,7 +57,7 @@ header .sub{font-size:11.5px;opacity:.8}
 
 /* Side panel */
 aside{width:340px;flex:none;background:#fff;border-left:1px solid var(--line);display:flex;flex-direction:column;min-height:0}
-.panel-h{background:#e8edf3;color:var(--navy);font-weight:600;padding:6px 10px;border-bottom:1px solid var(--line);font-size:12.5px;text-transform:uppercase;letter-spacing:.5px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.panel-h{background:var(--tint);color:var(--navy);font-weight:600;padding:6px 10px;border-bottom:1px solid var(--line);font-size:12.5px;text-transform:uppercase;letter-spacing:.5px;display:flex;justify-content:space-between;align-items:center;gap:8px}
 .fold{border:0;background:none;font:inherit;color:inherit;text-transform:inherit;letter-spacing:inherit;font-weight:600;cursor:pointer;padding:2px 0;display:flex;align-items:center;gap:6px}
 .fold .chev{display:inline-block;transition:transform .15s;font-size:11px}
 .fold[aria-expanded=true] .chev{transform:rotate(90deg)}
@@ -76,8 +77,8 @@ aside{width:340px;flex:none;background:#fff;border-left:1px solid var(--line);di
 .units button.on{background:var(--navy);color:#fff}
 #count{font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)}
 .maxbtn{border:1px solid #a9b0b9;background:#fff;border-radius:3px;font:inherit;font-size:11px;text-transform:none;letter-spacing:0;color:var(--navy);padding:2px 8px;cursor:pointer;margin-left:8px}
-.maxbtn:hover{background:#f1ecf8}
-#detail{padding:10px 12px;border-bottom:1px solid var(--line);display:none;background:#fffdf6;max-height:58vh;overflow:auto;flex:none}
+.maxbtn:hover{background:var(--tint)}
+#detail{padding:10px 12px;border-bottom:1px solid var(--line);display:none;background:#fbfaf4;max-height:58vh;overflow:auto;flex:none}
 #detail h2{font-size:15px;margin:0 0 6px;color:var(--navy)}
 #detail table{border-collapse:collapse;width:100%;font-size:12.5px}
 #detail td{padding:2px 0;vertical-align:top}
@@ -87,13 +88,13 @@ aside{width:340px;flex:none;background:#fff;border-left:1px solid var(--line);di
 .gbtn:hover{filter:brightness(1.08)}
 #list{overflow:auto;flex:1;min-height:0}
 #list .it{padding:6px 10px;border-bottom:1px solid #eee;cursor:pointer;display:flex;gap:8px;align-items:center}
-#list .it:hover,#list .it.sel{background:#eef4fb}
+#list .it:hover,#list .it.sel{background:#edf4f9}
 #list .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 #list .st{color:var(--muted);font-size:11.5px;width:22px}
 #list .tp{font-variant-numeric:tabular-nums;font-size:12px;color:var(--muted);width:48px;text-align:right}
 #list .ds{font-variant-numeric:tabular-nums;font-size:11.5px;color:var(--navy2);width:52px;text-align:right;display:none}
 .near #list .ds{display:block}
-#list .mi{flex:none;width:14px;color:#8a7aa6;display:grid;place-items:center}
+#list .mi{flex:none;width:14px;color:#6b87a6;display:grid;place-items:center}
 .gphoto{margin:10px 0 2px;border-top:1px solid #eee3c8;padding-top:10px}
 .gphoto figure{margin:0}
 .gphoto img{display:block;width:100%;max-height:240px;object-fit:cover;border-radius:4px;background:#eee}
@@ -107,7 +108,7 @@ aside{width:340px;flex:none;background:#fff;border-left:1px solid var(--line);di
 .about .ab-text{font-size:12.5px;margin:0;line-height:1.45}
 .ab-load{font-size:12px;color:var(--muted)}
 #list .gm{flex:none;width:26px;height:26px;display:grid;place-items:center;border-radius:4px;color:var(--navy2);text-decoration:none}
-#list .gm:hover{background:#e9e1f3}
+#list .gm:hover{background:var(--tint)}
 #list .ll,#list .qd,#list .tc,#list .cl,#list .ld{display:none}
 .landtag{display:inline-block;font-size:11px;font-weight:600;border-radius:9px;padding:1px 7px;margin-left:4px;vertical-align:1px}
 .landtag.pub{background:#e3f0da;color:#2f5a1e}.landtag.res{background:#fdf0d5;color:#7a5410}.landtag.no{background:#eee;color:#555}
@@ -145,7 +146,8 @@ aside{width:340px;flex:none;background:#fff;border-left:1px solid var(--line);di
 
 @media (max-width:760px){
   header{height:50px}
-  header h1{font-size:15px} header .sub{display:none}
+  .seal{width:40px;height:40px}
+  header h1{font-size:13.5px;letter-spacing:.3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis} header>div{min-width:0} header .sub{display:none}
   .app{flex-direction:column;height:calc(100% - 50px)}
   #mapwrap{flex:none;height:52%}
   .app.rc #mapwrap{flex:1;height:auto}
