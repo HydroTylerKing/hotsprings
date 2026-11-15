@@ -7,6 +7,12 @@
   const COLORS = {B:'#d7191c', H:'#f28c28', W:'#f5d327', '':'#222'};
   const LABEL = {B:'Boiling', H:'Hot', W:'Warm', '':'Not available'};
   const ORDER = {'':0, W:1, H:2, B:3};
+  // Land status from USGS PAD-US (see data/springs.json land_source)
+  const MGR = {USFS:'US Forest Service', BLM:'Bureau of Land Management', NPS:'National Park Service', FWS:'US Fish & Wildlife Service', USBR:'Bureau of Reclamation', DOD:'Dept. of Defense',
+    SDNR:'State land', SDOL:'State land', SLB:'State trust land', SPR:'State parks', SFW:'State fish & wildlife', OTHS:'State', CNTY:'County', CITY:'City', REG:'Regional district',
+    TRIB:'Tribal', NGO:'Nonprofit', PVT:'Private', UNK:'Unknown'};
+  const LANDCAT = {P:['Public land · open access','pub'], R:['Public land · restricted access','res'], U:['Public land · access unknown','res'], M:['Military · closed','no'], T:['Tribal land','no'], N:['Nonprofit preserve','no'], V:['Private','no']};
+  const landShort = d => !d.land ? 'Private or unmapped' : d.land[0] === 'P' ? 'Public' : d.land[0] === 'R' || d.land[0] === 'U' ? 'Public (limited)' : LANDCAT[d.land[0]][0];
   const PIN = '<svg width="15" height="15" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2a7 7 0 0 0-7 7c0 5.2 7 13 7 13s7-7.8 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/></svg>';
   const $ = id => document.getElementById(id);
   const title = s => s.replace(/\w\S*/g, w => w[0].toUpperCase() + w.slice(1).toLowerCase());
@@ -139,7 +145,7 @@
   });
 
   function init(json) {
-    S = json.springs.map((r, i) => ({i, name:r[0] || 'Unnamed spring', unnamed:!r[0], st:r[1], lat:r[2], lon:r[3], f:r[4], c:r[5], cls:r[6], quad:(r[7] || '').replace(/^\(|\)$/g, '')}));
+    S = json.springs.map((r, i) => ({i, name:r[0] || 'Unnamed spring', unnamed:!r[0], st:r[1], lat:r[2], lon:r[3], f:r[4], c:r[5], cls:r[6], quad:(r[7] || '').replace(/^\(|\)$/g, ''), land:r[8] || null}));
     // markers (hotter drawn on top)
     S.slice().sort((a, b) => ORDER[a.cls] - ORDER[b.cls]).forEach(d => {
       d.m = L.circleMarker([d.lat, d.lon], {renderer, radius:5, weight:1, color:'#000', opacity:.55, fillColor:COLORS[d.cls], fillOpacity:.95});
@@ -165,10 +171,11 @@
   map.on('baselayerchange', restyle);
 
   // ---------- Filtering ----------
-  const q = $('q'), stSel = $('state'), sortSel = $('sort'), minT = $('minT');
+  const q = $('q'), stSel = $('state'), sortSel = $('sort'), minT = $('minT'), landSel = $('land');
   const minF = () => +minT.value;
   function passes(d) {
-    const term = q.value.trim().toLowerCase(), st = stSel.value, m = minF();
+    const term = q.value.trim().toLowerCase(), st = stSel.value, m = minF(), lf = landSel.value;
+    if (lf && !(d.land && (lf === 'open' ? d.land[0] === 'P' : 'PRU'.includes(d.land[0])))) return false;
     return show[d.cls] && (!st || d.st === st) && (!term || d.name.toLowerCase().includes(term)) && (m <= 60 || (d.f != null && d.f >= m));
   }
   function update() {
@@ -207,7 +214,7 @@
       const dist = d.dist != null && me ? (d.dist < 10 ? d.dist.toFixed(1) : Math.round(d.dist).toLocaleString()) + ' mi' : '';
       el.innerHTML = '<span class="dot" style="background:' + COLORS[d.cls] + '"></span><span class="nm">' + esc(title(d.name)) + '</span><span class="st">' + d.st +
         '</span><span class="tp">' + fmt(d) + '</span><span class="tc">' + (d.c == null ? '—' : d.c + '°C') + '</span><span class="cl">' + LABEL[d.cls] +
-        '</span><span class="ll">' + d.lat.toFixed(3) + ', ' + d.lon.toFixed(3) + '</span><span class="qd">' + esc(d.quad) + '</span><span class="ds">' + dist +
+        '</span><span class="ld" title="' + esc(d.land ? d.land[2] : '') + '">' + esc(d.land ? d.land[2] : landShort(d)) + '</span><span class="qd">' + esc(d.quad) + '</span><span class="ds">' + dist +
         '</span><a class="gm" title="Open in Google Maps" target="_blank" rel="noopener" href="' + gmaps(d) + '">' + PIN + '</a>';
       frag.appendChild(el);
     }
@@ -236,6 +243,7 @@
       '<tr><td>Temperature</td><td>' + tempLong(d) + '</td></tr>' +
       '<tr><td>Class</td><td><span class="dot" style="background:' + COLORS[d.cls] + ';vertical-align:-1px"></span> ' + LABEL[d.cls] + '</td></tr>' +
       '<tr><td>Latitude, longitude</td><td>' + lat + ', ' + lon + '</td></tr>' +
+      '<tr><td>Land</td><td>' + (d.land ? esc(d.land[2]) + (MGR[d.land[1]] && !d.land[2].includes(MGR[d.land[1]]) ? ' <span style="color:var(--muted)">(' + MGR[d.land[1]] + ')</span>' : '') + '<br><span class="landtag ' + LANDCAT[d.land[0]][1] + '" style="margin-left:0">' + LANDCAT[d.land[0]][0] + '</span>' : '<span class="landtag no" style="margin-left:0">Private or unmapped</span>') + '</td></tr>' +
       (d.quad ? '<tr><td>USGS quadrangle</td><td>' + esc(d.quad) + '</td></tr>' : '') +
       (dist != null ? '<tr><td>Distance from you</td><td>' + Math.round(dist).toLocaleString() + ' mi (straight line)</td></tr>' : '') +
       '</table><a class="gbtn" target="_blank" rel="noopener" href="' + gmaps(d) + '">' + PIN + ' Open in Google Maps</a>';
@@ -267,12 +275,13 @@
   }
   $('units').addEventListener('click', e => { const b = e.target.closest('button'); if (b) setUnit(b.dataset.u); });
   function activeBadge() {
-    let n = 0; if (q.value.trim()) n++; if (stSel.value) n++; if (minF() > 60) n++; if (sortSel.value !== 'name') n++; if (!$('inView').checked) n++;
+    let n = 0; if (landSel.value) n++; if (q.value.trim()) n++; if (stSel.value) n++; if (minF() > 60) n++; if (sortSel.value !== 'name') n++; if (!$('inView').checked) n++;
     const a = $('active'); a.textContent = n + (n === 1 ? ' filter' : ' filters'); a.style.display = n ? 'inline' : 'none';
   }
   const fold = $('fold'), ctr = $('controls');
   fold.onclick = () => { const open = ctr.hidden; ctr.hidden = !open; fold.setAttribute('aria-expanded', open); if (open) q.focus({preventScroll:true}); };
   q.addEventListener('input', update);
+  landSel.addEventListener('change', update);
   $('inView').addEventListener('change', update);
   sortSel.addEventListener('change', () => { if (sortSel.value === 'near' && !me) locate(false); update(); });
   minT.addEventListener('input', () => { minLabel(); update(); });

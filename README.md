@@ -11,6 +11,7 @@ An interactive map of 1,661 thermal (hot) springs in the United States, rebuilt 
 - Search by name, filter by state or minimum temperature, and sort by name, temperature or distance from you
 - A results list limited to the current map view, which can expand into a full-screen table
 - A "locate me" button and a distance column
+- A land filter (any ownership, public land only, or public land with open access), with each spring's land unit and manager shown in its details
 - A °F/°C switch
 - Shareable links to individual springs, such as `#spring-547`
 
@@ -19,6 +20,8 @@ An interactive map of 1,661 thermal (hot) springs in the United States, rebuilt 
 *Thermal Springs List for the United States* — G. W. Berry, P. J. Grim and J. A. Ikelman, NOAA Key to Geophysical Records Documentation No. 12 (1980). The list was archived when NOAA decommissioned the product in May 2025: <https://doi.org/10.25921/c8p0-zs06>. The digitized copy used here comes from [dgketchum/ncei-thermal-springs](https://github.com/dgketchum/ncei-thermal-springs).
 
 `data/springs.json` fields: `name, state, lat, lon, temp_f, temp_c, class, usgs_quad`. Class is `B` (≥ 90 °C), `H` (50–89 °C), `W` (< 50 °C), or the source's own B/H/W label when no temperature was recorded.
+
+Land ownership comes from USGS [PAD-US 4.1](https://www.usgs.gov/programs/gap-analysis-project/science/pad-us-web-services) (the Fee Managers layer), checked at each spring's listed coordinates in November 2026. Each spring's last field, `land`, holds `[category, manager code, unit name]`, or `null` when no PAD-US parcel covers the point, which usually means private land. Category codes: `P` public with open access, `R` public with restricted access, `U` public with unknown access, `M` military, `T` tribal, `N` nonprofit preserve, `V` private. "Public land only" in the app means P, R or U; "open access" means P only. Some 1980 coordinates are off by hundreds of meters, so a spring near a boundary may be classed wrongly.
 
 The list has not been updated since 1980. Many springs are on private or closed land, so check access before you go.
 

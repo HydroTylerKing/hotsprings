@@ -63,7 +63,7 @@ aside{width:340px;flex:none;background:#fff;border-left:1px solid var(--line);di
 .fold .active{font-weight:600;text-transform:none;letter-spacing:0;font-size:11px;background:var(--navy2);color:#fff;border-radius:9px;padding:1px 7px;display:none}
 .controls[hidden]{display:none!important}
 .controls{padding:10px;display:grid;gap:8px;border-bottom:1px solid var(--line)}
-.controls input[type=search],.controls select{width:100%;padding:6px 8px;border:1px solid #a9b0b9;border-radius:3px;font:inherit;background:#fff}
+.controls input[type=search],.controls select,#land{width:100%;padding:6px 8px;border:1px solid #a9b0b9;border-radius:3px;font:inherit;background:#fff}
 .row{display:flex;gap:8px;align-items:center}
 .row>*{flex:1;min-width:0}
 .inview{display:flex;align-items:center;gap:6px;font-size:12.5px;cursor:pointer}
@@ -95,7 +95,9 @@ aside{width:340px;flex:none;background:#fff;border-left:1px solid var(--line);di
 .near #list .ds{display:block}
 #list .gm{flex:none;width:26px;height:26px;display:grid;place-items:center;border-radius:4px;color:var(--navy2);text-decoration:none}
 #list .gm:hover{background:#e9e1f3}
-#list .ll,#list .qd,#list .tc,#list .cl{display:none}
+#list .ll,#list .qd,#list .tc,#list .cl,#list .ld{display:none}
+.landtag{display:inline-block;font-size:11px;font-weight:600;border-radius:9px;padding:1px 7px;margin-left:4px;vertical-align:1px}
+.landtag.pub{background:#e3f0da;color:#2f5a1e}.landtag.res{background:#fdf0d5;color:#7a5410}.landtag.no{background:#eee;color:#555}
 .thead{display:none}
 .foot{font-size:10.5px;color:var(--muted);padding:6px 10px;border-top:1px solid var(--line)}
 .foot a{color:var(--navy2)}
@@ -120,7 +122,7 @@ aside{width:340px;flex:none;background:#fff;border-left:1px solid var(--line);di
 .app.max #list .st{width:40px}
 .app.max #list .tp,.app.max #list .tc{width:64px}
 .app.max #list .cl{display:block;width:90px;color:var(--muted);font-size:12px}
-.app.max #list .ll{display:block;width:150px;color:var(--muted);font-size:12px;font-variant-numeric:tabular-nums}
+.app.max #list .ld{display:block;width:150px;color:var(--muted);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .app.max #list .qd{display:block;flex:1;min-width:0;color:var(--muted);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .app.max #list .tc{display:block;text-align:right;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
 .app.max .thead{display:flex;gap:8px;padding:5px 16px;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;border-bottom:1px solid var(--line);background:#faf8f4}
