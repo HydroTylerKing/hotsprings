@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wildflower Touring — Hot Springs Map</title>
+<meta name="description" content="Interactive map of 1,661 US thermal springs from NOAA's Thermal Springs List, with topo, satellite and street basemaps.">
+<link rel="icon" href="assets/logo.svg" type="image/svg+xml">
+<link rel="stylesheet" href="vendor/leaflet/leaflet.css">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <img class="seal" src="assets/logo.svg" alt="">
+  <div><h1>Wildflower Touring · Hot Springs Map</h1><div class="sub">1,661 thermal springs across the US · data: NOAA Thermal Springs List (Berry, Grim &amp; Ikelman, 1980)</div></div>
+</header>
+<div class="app" id="app">
+  <div id="mapwrap">
+    <div id="map" aria-label="Map of US thermal springs"></div>
+    <div class="bm" id="bm">
+      <button id="bmbtn" aria-expanded="false"><svg width="15" height="15" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2 1 8l11 6 11-6zm-9.2 9.5L1 12.5l11 6 11-6-1.8-1-9.2 5zm0 4L1 16.5l11 6 11-6-1.8-1-9.2 5z"/></svg>Basemap</button>
+      <div class="menu">
+        <div class="grid" id="bmgrid"></div>
+        <div class="hdr">Overlays</div>
+        <label><input type="checkbox" id="ovLabels"> Roads &amp; place labels <span class="hint">(for imagery)</span></label>
+      </div>
+    </div>
+    <div class="legend" id="legend">
+      <button class="lh" id="legbtn" aria-expanded="true" title="Show or hide the legend"><span class="chev">▸</span>Temperature<span class="mini"><span class="dot" style="background:var(--boil)"></span><span class="dot" style="background:var(--hot)"></span><span class="dot" style="background:var(--warm)"></span><span class="dot" style="background:var(--na)"></span></span></button>
+      <div class="lb" id="legbody" title="Measured temps are binned; springs listed only as boiling/hot/warm in the source keep that label.">
+        <label><input type="checkbox" data-c="B" checked><span class="dot" style="background:var(--boil)"></span>Boiling <span class="lt" data-k="B"></span></label>
+        <label><input type="checkbox" data-c="H" checked><span class="dot" style="background:var(--hot)"></span>Hot <span class="lt" data-k="H"></span></label>
+        <label><input type="checkbox" data-c="W" checked><span class="dot" style="background:var(--warm)"></span>Warm <span class="lt" data-k="W"></span></label>
+        <label><input type="checkbox" data-c="" checked><span class="dot" style="background:var(--na)"></span>No data</label>
+      </div>
+    </div>
+  </div>
+  <aside>
+    <div class="panel-h"><button class="fold" id="fold" aria-expanded="false" aria-controls="controls"><span class="chev">▸</span> Find springs <span class="active" id="active"></span></button><span class="units" id="units"><button data-u="F" class="on">°F</button><button data-u="C">°C</button></span></div>
+    <div class="controls" id="controls" hidden>
+      <input type="search" id="q" placeholder="Search by name (e.g. Burgdorf, Chena)…" autocomplete="off">
+      <div class="row">
+        <select id="state"><option value="">All states</option></select>
+        <select id="sort"><option value="name">Sort: name</option><option value="hot">Sort: hottest</option><option value="cold">Sort: coolest</option><option value="near">Sort: nearest to me</option></select>
+      </div>
+      <label class="inview"><input type="checkbox" id="inView" checked> Only list springs in the current map view</label>
+      <div class="range">Min temp <input type="range" id="minT" min="60" max="310" step="1" value="60"><span id="minTv"></span></div>
+    </div>
+    <div id="detail"></div>
+    <div class="panel-h"><span>Results</span><span><span id="count"></span><button class="maxbtn" id="maxbtn" title="Expand the results table">⤢ Expand</button></span></div>
+    <div class="thead"><span></span><span>Name</span><span>State</span><span>°F</span><span>°C</span><span>Class</span><span>Lat, Lon</span><span>USGS quadrangle</span><span class="dcol">Distance</span><span></span></div>
+    <div id="list"></div>
+    <div class="foot">1,661 springs from the <i>Thermal Springs List for the United States</i> (NOAA Key to Geophysical Records Doc. No. 12, 1980). Not updated since 1980 — many are on private or closed land; check access before you go. Based on the retired NOAA/NGDC hot springs viewer; source data archived at <a href="https://doi.org/10.25921/c8p0-zs06" target="_blank" rel="noopener">doi:10.25921/c8p0-zs06</a>.</div>
+  </aside>
+</div>
+<script src="vendor/leaflet/leaflet.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
