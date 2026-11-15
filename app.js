@@ -178,7 +178,7 @@
     if (lf) {
       const c = d.land ? d.land[0] : '';
       // private = no PAD-US parcel (usually private), private ranches, or nonprofit preserves
-      const ok = lf === 'open' ? c === 'P' : lf === 'public' ? 'PRU'.includes(c) && c !== '' : c === '' || c === 'V' || c === 'N';
+      const ok = lf === 'open' ? c === 'P' : lf === 'limited' ? c === 'R' || c === 'U' : lf === 'public' ? 'PRU'.includes(c) && c !== '' : c === '' || c === 'V' || c === 'N';
       if (!ok) return false;
     }
     return show[d.cls] && (!st || d.st === st) && (!term || d.name.toLowerCase().includes(term)) && (m <= 60 || (d.f != null && d.f >= m));
