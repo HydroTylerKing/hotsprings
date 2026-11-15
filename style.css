@@ -100,6 +100,13 @@ aside{width:340px;flex:none;background:#fff;border-left:1px solid var(--line);di
 .foot{font-size:10.5px;color:var(--muted);padding:6px 10px;border-top:1px solid var(--line)}
 .foot a{color:var(--navy2)}
 
+/* Collapsed results: list hidden, map gets the room */
+.app.rc #list,.app.rc .thead,.app.rc .foot{display:none!important}
+@media (min-width:761px){
+  .app.rc aside{position:absolute;z-index:1001;top:10px;left:56px;width:340px;max-height:calc(100% - 40px);border:1px solid #9aa3ad;border-radius:6px;overflow:auto;box-shadow:0 3px 12px rgba(0,0,0,.18)}
+  .app.rc{position:relative}
+  .app.rc .panel-h:first-child{border-radius:6px 6px 0 0}
+}
 /* Expanded table */
 .app.max #mapwrap{display:none}
 .app.max #detail{display:none!important}
@@ -122,6 +129,8 @@ aside{width:340px;flex:none;background:#fff;border-left:1px solid var(--line);di
   header h1{font-size:15px} header .sub{display:none}
   .app{flex-direction:column;height:calc(100% - 50px)}
   #mapwrap{flex:none;height:52%}
+  .app.rc #mapwrap{flex:1;height:auto}
+  .app.rc aside{flex:none;max-height:60%;overflow:auto}
   aside{width:auto;border-left:0;border-top:1px solid var(--line);flex:1}
   .legend .lt{display:none}
   .bm .menu{width:200px}

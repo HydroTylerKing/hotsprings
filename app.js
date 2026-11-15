@@ -294,6 +294,14 @@
     maxbtn.title = on ? 'Back to the map' : 'Expand the results table';
     if (!on) setTimeout(() => { map.invalidateSize(); update(); }, 0); else update();
   }
-  maxbtn.onclick = () => toggleMax();
+  maxbtn.onclick = () => { if (app.classList.contains('rc')) setResults(true); toggleMax(); };
+  // collapsible results list (starts collapsed)
+  const rfold = $('rfold');
+  function setResults(open) {
+    app.classList.toggle('rc', !open); rfold.setAttribute('aria-expanded', open);
+    if (!open && app.classList.contains('max')) toggleMax(false);
+    setTimeout(() => map.invalidateSize(), 0);
+  }
+  rfold.onclick = () => setResults(app.classList.contains('rc'));
   new ResizeObserver(() => map.invalidateSize()).observe($('mapwrap'));
 })();
