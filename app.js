@@ -15,6 +15,8 @@
   const landShort = d => !d.land ? 'Private or unmapped' : d.land[0] === 'P' ? 'Public' : d.land[0] === 'R' || d.land[0] === 'U' ? 'Public (limited)' : LANDCAT[d.land[0]][0];
   const PIN = '<svg width="15" height="15" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2a7 7 0 0 0-7 7c0 5.2 7 13 7 13s7-7.8 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/></svg>';
   const $ = id => document.getElementById(id);
+  const CAM = '<svg width="13" height="13" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M9 3 7.2 5H4a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-3.2L15 3zm3 5a5 5 0 1 1 0 10 5 5 0 0 1 0-10zm0 2a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"/></svg>';
+  const BOOK = '<svg width="13" height="13" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M4 4a2 2 0 0 1 2-2h13v17H6a1 1 0 0 0 0 2h13v1H6a3 3 0 0 1-3-3V4zm4 2v2h8V6z"/></svg>';
   const title = s => s.replace(/\w\S*/g, w => w[0].toUpperCase() + w.slice(1).toLowerCase());
   const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const gmaps = d => 'https://www.google.com/maps/search/?api=1&query=' + d.lat + ',' + d.lon;
@@ -140,7 +142,10 @@
   const fmt = (d, u = unit) => d.f == null ? (d.cls ? LABEL[d.cls] : '—') : (u === 'F' ? d.f + '°F' : d.c + '°C');
   const tempLong = d => d.f == null ? (d.cls ? LABEL[d.cls] + ' (no reading listed)' : 'Not available') : d.f + '°F / ' + d.c + '°C';
 
-  fetch('data/springs.json').then(r => r.json()).then(init).catch(err => {
+  // Wikipedia article / Commons photo matched to each spring (data/media.json); text and credits load live
+  let MEDIA = {};
+  const mediaReady = fetch('data/media.json?v=1').then(r => r.ok ? r.json() : {m:{}}).then(j => { MEDIA = j.m || {}; }).catch(() => {});
+  Promise.all([fetch('data/springs.json').then(r => r.json()), mediaReady]).then(([j]) => init(j)).catch(err => {
     alertMsg('Could not load spring data (' + err + ').');
   });
 
@@ -220,7 +225,7 @@
       el.innerHTML = '<span class="dot" style="background:' + COLORS[d.cls] + '"></span><span class="nm">' + esc(title(d.name)) + '</span><span class="st">' + d.st +
         '</span><span class="tp">' + fmt(d) + '</span><span class="tc">' + (d.c == null ? '—' : d.c + '°C') + '</span><span class="cl">' + LABEL[d.cls] +
         '</span><span class="ld" title="' + esc(d.land ? d.land[2] : '') + '">' + esc(d.land ? d.land[2] : landShort(d)) + '</span><span class="qd">' + esc(d.quad) + '</span><span class="ds">' + dist +
-        '</span><a class="gm" title="Open in Google Maps" target="_blank" rel="noopener" href="' + gmaps(d) + '">' + PIN + '</a>';
+        '</span>' + (MEDIA[d.i] ? '<span class="mi" title="' + (MEDIA[d.i][1] ? 'Has photo' : 'Has description') + '">' + (MEDIA[d.i][1] ? CAM : BOOK) + '</span>' : '<span class="mi"></span>') + '<a class="gm" title="Open in Google Maps" target="_blank" rel="noopener" href="' + gmaps(d) + '">' + PIN + '</a>';
       frag.appendChild(el);
     }
     shown += 200; list.appendChild(frag);
@@ -251,13 +256,59 @@
       '<tr><td>Land</td><td>' + (d.land ? esc(d.land[2]) + (MGR[d.land[1]] && !d.land[2].includes(MGR[d.land[1]]) ? ' <span style="color:var(--muted)">(' + MGR[d.land[1]] + ')</span>' : '') + '<br><span class="landtag ' + LANDCAT[d.land[0]][1] + '" style="margin-left:0">' + LANDCAT[d.land[0]][0] + '</span>' : '<span class="landtag no" style="margin-left:0">Private or unmapped</span>') + '</td></tr>' +
       (d.quad ? '<tr><td>USGS quadrangle</td><td>' + esc(d.quad) + '</td></tr>' : '') +
       (dist != null ? '<tr><td>Distance from you</td><td>' + Math.round(dist).toLocaleString() + ' mi (straight line)</td></tr>' : '') +
-      '</table><a class="gbtn" target="_blank" rel="noopener" href="' + gmaps(d) + '">' + PIN + ' Open in Google Maps</a>';
+      '</table>' + (MEDIA[d.i] ? '<div class="about" id="about"><div class="ab-load">Loading description…</div></div>' : '') + '<a class="gbtn" target="_blank" rel="noopener" href="' + gmaps(d) + '">' + PIN + ' Open in Google Maps</a>';
+    if (MEDIA[d.i]) loadAbout(d);
     det.querySelector('.x').onclick = () => { sel = null; det.style.display = 'none'; map.closePopup(); restyle(); list.querySelectorAll('.it.sel').forEach(e => e.classList.remove('sel')); setHash(''); };
     const open = () => L.popup({offset:[0,-4], autoPan:!fly, closeButton:true}).setLatLng([d.lat, d.lon]).setContent(popupHtml(d)).openOn(map);
     if (fly) { map.once('moveend', open); map.flyTo([d.lat, d.lon], Math.max(map.getZoom(), 11), {duration:.8}); } else open();
     setHash('spring-' + d.i);
   }
   map.on('popupclose', () => {});
+
+  // ---------- Description & photo (Wikipedia / Wikimedia Commons) ----------
+  const mediaCache = {};
+  const fmtDate = s => { if (!s) return ''; const m = /^(\d{4})(?:[-:](\d{2}))?(?:[-:](\d{2}))?/.exec(String(s).trim()); if (!m) return ''; const dt = new Date(Date.UTC(+m[1], m[2] ? +m[2] - 1 : 0, m[3] ? +m[3] : 1)); return m[3] ? dt.toLocaleDateString(undefined, {year:'numeric', month:'short', day:'numeric', timeZone:'UTC'}) : m[2] ? dt.toLocaleDateString(undefined, {year:'numeric', month:'short', timeZone:'UTC'}) : m[1]; };
+  const stripHtml = s => { const el = document.createElement('div'); el.innerHTML = s || ''; return (el.textContent || '').replace(/\s+/g, ' ').trim(); };
+  async function wikiApi(base, params) {
+    const p = new URLSearchParams(Object.assign({action:'query', format:'json', formatversion:'2', origin:'*'}, params));
+    const r = await fetch(base + '?' + p); return r.json();
+  }
+  async function getMedia(i) {
+    if (mediaCache[i]) return mediaCache[i];
+    const [title, file] = MEDIA[i]; const out = {};
+    const jobs = [];
+    if (title) jobs.push(wikiApi('https://en.wikipedia.org/w/api.php', {prop:'extracts|revisions|info', titles:title, exintro:1, explaintext:1, exsentences:4, rvprop:'timestamp', rvlimit:1, inprop:'url', redirects:1}).then(j => {
+      const p = j.query && j.query.pages && j.query.pages[0];
+      if (p && !p.missing && p.extract) out.wiki = {title:p.title, text:p.extract, url:p.fullurl, edited:p.revisions && p.revisions[0] && p.revisions[0].timestamp};
+    }).catch(() => {}));
+    if (file) jobs.push(wikiApi('https://commons.wikimedia.org/w/api.php', {prop:'imageinfo', titles:file, iiprop:'url|extmetadata', iiurlwidth:640}).then(j => {
+      const p = j.query && j.query.pages && j.query.pages[0], ii = p && p.imageinfo && p.imageinfo[0];
+      if (!ii) return; const md = ii.extmetadata || {}; const v = k => md[k] && md[k].value;
+      const lic = stripHtml(v('LicenseShortName'));
+      if (!/cc|public domain|pd|gfdl|no restrictions/i.test(lic) || /fair use|non-free/i.test(lic)) return;
+      out.photo = {src:ii.thumburl || ii.url, page:ii.descriptionurl, artist:stripHtml(v('Artist')) || 'Unknown author', license:lic, licenseUrl:v('LicenseUrl') || '', taken:v('DateTimeOriginal') ? stripHtml(v('DateTimeOriginal')) : '', uploaded:v('DateTime') || ''};
+    }).catch(() => {}));
+    await Promise.all(jobs);
+    return mediaCache[i] = out;
+  }
+  async function loadAbout(d) {
+    const m = await getMedia(d.i);
+    const box = $('about'); if (!box || sel !== d) return;
+    let h = '';
+    if (m.photo) {
+      const when = m.photo.taken ? 'taken ' + fmtDate(m.photo.taken) : m.photo.uploaded ? 'uploaded ' + fmtDate(m.photo.uploaded) : '';
+      h += '<figure><a href="' + esc(m.photo.page) + '" target="_blank" rel="noopener"><img src="' + esc(m.photo.src) + '" alt="Photo near ' + esc(title(d.name)) + '" loading="lazy"></a>' +
+        '<figcaption>Photo: ' + esc(m.photo.artist) + ', <a href="' + esc(m.photo.page) + '" target="_blank" rel="noopener">Wikimedia Commons</a> · ' +
+        (m.photo.licenseUrl ? '<a href="' + esc(m.photo.licenseUrl) + '" target="_blank" rel="noopener">' + esc(m.photo.license) + '</a>' : esc(m.photo.license)) + (when ? ' · ' + when : '') + '</figcaption></figure>';
+    }
+    if (m.wiki) {
+      const txt = m.wiki.text.length > 700 ? m.wiki.text.slice(0, 700).replace(/\s+\S*$/, '') + '…' : m.wiki.text;
+      h += '<p class="ab-text"></p><div class="ab-src">From Wikipedia, <a href="' + esc(m.wiki.url) + '" target="_blank" rel="noopener">“' + esc(m.wiki.title) + '”</a>' +
+        (m.wiki.edited ? ', last edited ' + fmtDate(m.wiki.edited) : '') + ' · <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener">CC BY-SA 4.0</a></div>';
+      box.innerHTML = h; box.querySelector('.ab-text').textContent = txt;
+    } else box.innerHTML = h || '';
+    if (!h) box.remove();
+  }
 
   // shareable links: #spring-123
   function setHash(h) { try { history.replaceState(null, '', h ? '#' + h : location.pathname + location.search); } catch (e) {} }
