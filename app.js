@@ -256,8 +256,9 @@
       '<tr><td>Land</td><td>' + (d.land ? esc(d.land[2]) + (MGR[d.land[1]] && !d.land[2].includes(MGR[d.land[1]]) ? ' <span style="color:var(--muted)">(' + MGR[d.land[1]] + ')</span>' : '') + '<br><span class="landtag ' + LANDCAT[d.land[0]][1] + '" style="margin-left:0">' + LANDCAT[d.land[0]][0] + '</span>' : '<span class="landtag no" style="margin-left:0">Private or unmapped</span>') + '</td></tr>' +
       (d.quad ? '<tr><td>USGS quadrangle</td><td>' + esc(d.quad) + '</td></tr>' : '') +
       (dist != null ? '<tr><td>Distance from you</td><td>' + Math.round(dist).toLocaleString() + ' mi (straight line)</td></tr>' : '') +
-      '</table>' + (MEDIA[d.i] ? '<div class="about" id="about"><div class="ab-load">Loading description…</div></div>' : '') + '<a class="gbtn" target="_blank" rel="noopener" href="' + gmaps(d) + '">' + PIN + ' Open in Google Maps</a>';
+      '</table><div class="gphoto" id="gphoto" hidden></div>' + (MEDIA[d.i] ? '<div class="about" id="about"><div class="ab-load">Loading description…</div></div>' : '') + '<a class="gbtn" target="_blank" rel="noopener" href="' + gmaps(d) + '">' + PIN + ' Open in Google Maps</a>';
     if (MEDIA[d.i]) loadAbout(d);
+    loadGooglePhoto(d);
     det.querySelector('.x').onclick = () => { sel = null; det.style.display = 'none'; map.closePopup(); restyle(); list.querySelectorAll('.it.sel').forEach(e => e.classList.remove('sel')); setHash(''); };
     const open = () => L.popup({offset:[0,-4], autoPan:!fly, closeButton:true}).setLatLng([d.lat, d.lon]).setContent(popupHtml(d)).openOn(map);
     if (fly) { map.once('moveend', open); map.flyTo([d.lat, d.lon], Math.max(map.getZoom(), 11), {duration:.8}); } else open();
@@ -308,6 +309,56 @@
       box.innerHTML = h; box.querySelector('.ab-text').textContent = txt;
     } else box.innerHTML = h || '';
     if (!h) box.remove();
+  }
+
+  // ---------- Google Maps place photo (Places API, shown live; nothing is stored) ----------
+  const GKEY = (window.WT_CONFIG && window.WT_CONFIG.googleMapsKey) || '';
+  let gLib = null; const gCache = {};
+  function loadGoogle() {
+    if (!GKEY) return Promise.reject(new Error('no key'));
+    if (gLib) return gLib;
+    gLib = new Promise((resolve, reject) => {
+      window.__wtGoogleReady = () => google.maps.importLibrary('places').then(resolve, reject);
+      const s = document.createElement('script');
+      s.src = 'https://maps.googleapis.com/maps/api/js?key=' + encodeURIComponent(GKEY) + '&v=weekly&loading=async&callback=__wtGoogleReady';
+      s.async = true; s.onerror = () => reject(new Error('Google Maps failed to load'));
+      document.head.appendChild(s);
+    });
+    return gLib;
+  }
+  const GEN = new Set(['hot','warm','spring','springs','the','of','and','at','near','in','on','thermal','mineral','unnamed','group','area','no','north','south','east','west','upper','lower','big','little','creek','river','lake','canyon','valley','mountain','mtn','mt','pool','pools','well','wells','seep','seeps','geothermal','vent','vents','fumarole','fumaroles','resort','baths','bath','spa','ranch','old','new','site','county','national','park','forest','city']);
+  const toks = s => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\(.*?\)/g, ' ').replace(/[^a-z0-9 ]/g, ' ').split(/\s+/).filter(Boolean);
+  const distinctToks = s => toks(s).filter(w => !GEN.has(w) && w.length > 2);
+  const kmBetween = (a, b, c, d) => { const t = Math.PI / 180, x = (c - a) * t, y = (d - b) * t; const h = Math.sin(x / 2) ** 2 + Math.cos(a * t) * Math.cos(c * t) * Math.sin(y / 2) ** 2; return 12742 * Math.asin(Math.sqrt(h)); };
+  async function findGooglePhoto(d) {
+    if (d.i in gCache) return gCache[d.i];
+    const want = distinctToks(d.name);
+    if (!want.length) return gCache[d.i] = null;           // generic names ("Hot Spring") can't be matched reliably
+    const lib = await loadGoogle();
+    const {places} = await lib.Place.searchByText({
+      textQuery: title(d.name) + ' ' + NAMES[d.st],
+      fields: ['displayName', 'location', 'photos', 'googleMapsURI'],
+      locationBias: {center: {lat: d.lat, lng: d.lon}, radius: 3000},
+      maxResultCount: 5
+    });
+    for (const p of places || []) {
+      if (!p.photos || !p.photos.length || !p.location) continue;
+      const have = new Set(toks(p.displayName || ''));
+      const nameOk = want.every(w => have.has(w) || have.has(w.replace(/s$/, '')) || have.has(w + 's'));
+      if (!nameOk || kmBetween(d.lat, d.lon, p.location.lat(), p.location.lng()) > 3) continue;
+      const ph = p.photos[0];
+      return gCache[d.i] = {src: ph.getURI({maxWidth: 640}), place: p.displayName, mapsUrl: p.googleMapsURI, authors: (ph.authorAttributions || []).map(a => ({name: a.displayName, uri: a.uri}))};
+    }
+    return gCache[d.i] = null;
+  }
+  async function loadGooglePhoto(d) {
+    if (!GKEY) return;
+    let g = null; try { g = await findGooglePhoto(d); } catch (e) { return; }
+    const box = $('gphoto'); if (!box || sel !== d || !g) return;
+    const by = g.authors.length ? g.authors.map(a => a.uri ? '<a href="' + esc(a.uri) + '" target="_blank" rel="noopener">' + esc(a.name) + '</a>' : esc(a.name)).join(', ') : 'a Google Maps contributor';
+    box.innerHTML = '<figure><a href="' + esc(g.mapsUrl || gmaps(d)) + '" target="_blank" rel="noopener"><img src="' + esc(g.src) + '" alt="Google Maps photo of ' + esc(g.place) + '" loading="lazy"></a>' +
+      '<figcaption>Photo of “' + esc(g.place) + '” by ' + by + ' · <a href="' + esc(g.mapsUrl || gmaps(d)) + '" target="_blank" rel="noopener">Google Maps</a></figcaption></figure>';
+    box.hidden = false;
   }
 
   // shareable links: #spring-123

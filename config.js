@@ -1,0 +1,5 @@
+// Site settings. The Google key is a browser key: restrict it in Google Cloud to
+// HTTP referrer https://hydrotylerking.github.io/* and to the Maps JavaScript API + Places API (New).
+window.WT_CONFIG = {
+  googleMapsKey: ''
+};
