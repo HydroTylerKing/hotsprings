@@ -66,6 +66,7 @@ for a in raw:
     elif t is not None and t > -99: c = (t - 32) * 5 / 9 if u == 'F' else t
     # Eastern springs top out near 40 C (Hot Springs, VA); a Celsius reading above 45 there is really Fahrenheit
     if c is not None and u != 'F' and c > 45 and a.get('originating_state') in EAST: c = (c - 32) * 5 / 9; FIXED[0] += 1
+    if c is not None and c > 45 and a.get('originating_state') in EAST: c = None; FIXED[0] += 1   # still impossible there: treat as unknown
     if c is not None and not (0 <= c <= 105): c = None
     d = a.get('tempmeasurementdatetime') or ''; yr = int(d[:4]) if d[:4].isdigit() and int(d[:4]) > 1901 else None   # 1899-1901 are placeholders
     src = re.sub(r'\s+', ' ', (a.get('source') or '').strip())
@@ -122,7 +123,9 @@ for a in cands:
         keep.append(a)
 for a in keep:
     n = clean(a['name']) or 'Unnamed spring'
-    a['dname'] = 'Unnamed spring' if re.match(r'^(unnamed|no name|spring$|missing$|unknown$|none$)', n, re.I) else n
+    mid = re.match(r'^[A-Z]{2}_([A-Za-z]+)_\d+S?$', n)          # Tennessee records are named by ID, e.g. TN_Anderson_0044S
+    if mid: n = 'Unnamed spring (' + re.sub(r'(?<=[a-z])(?=[A-Z])', ' ', mid.group(1)) + ' County)'
+    a['dname'] = 'Unnamed spring' if re.match(r'^(unnamed|no name|spring$|missing$|unknown$|none$)', n, re.I) and not mid else n
 
 # ---- land ownership (PAD-US 4.1 Fee Managers) at new springs and moved locations
 ORDER = {'OA': 0, 'RA': 1, 'UK': 2, 'XA': 3}
