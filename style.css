@@ -191,7 +191,7 @@ aside{width:340px;flex:none;background:#fff;border-left:1px solid var(--line);di
   .bm .sw img{height:36px}
   .foot{font-size:9.5px;padding:4px 8px}
   .app.max .controls{grid-template-columns:1fr}.app.max .controls .row{grid-column:auto}
-  .app.max #list .ll,.app.max #list .qd,.app.max #list .cl,.app.max #list .tc,.app.max .thead span:nth-child(5),.app.max .thead span:nth-child(6),.app.max .thead span:nth-child(7),.app.max .thead span:nth-child(8){display:none}
+  .app.max #list .ll,.app.max #list .ld,.app.max #list .qd,.app.max #list .cl,.app.max #list .tc,.app.max .thead span:nth-child(5),.app.max .thead span:nth-child(6),.app.max .thead span:nth-child(7),.app.max .thead span:nth-child(8){display:none}
   .app.max #list .nm,.thead span:nth-child(2){flex:1}
   .app.max #list .it,.app.max .thead{padding-left:10px;padding-right:10px}
   .app.max #list .st,.thead span:nth-child(3){width:28px}
