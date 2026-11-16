@@ -423,4 +423,14 @@
   }
   rfold.onclick = () => setResults(app.classList.contains('rc'));
   new ResizeObserver(() => map.invalidateSize()).observe($('mapwrap'));
+  // ---------- About dialog (logo click, or #about link) ----------
+  const aboutDlg = $('about');
+  function openAbout() { if (!aboutDlg.open) { if (aboutDlg.showModal) aboutDlg.showModal(); else aboutDlg.setAttribute('open', ''); } }
+  function closeAbout() { if (aboutDlg.close) aboutDlg.close(); else aboutDlg.removeAttribute('open'); if (location.hash === '#about') setHash(''); }
+  $('aboutbtn').onclick = () => { openAbout(); setHash('about'); };
+  $('aboutClose').onclick = closeAbout;
+  aboutDlg.addEventListener('click', e => { if (e.target !== aboutDlg) return; const r = aboutDlg.getBoundingClientRect(); if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) closeAbout(); });   // click on the backdrop
+  aboutDlg.addEventListener('close', () => { if (location.hash === '#about') setHash(''); });
+  if (location.hash === '#about') openAbout();
+  window.addEventListener('hashchange', () => { if (location.hash === '#about') openAbout(); });
 })();
