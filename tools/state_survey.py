@@ -62,11 +62,10 @@ for a in raw:
     lat, lon = a.get('latdegree'), a.get('longdegree')
     if not lat or not lon or abs(lat) > 90: continue
     u = (a.get('temperatureunits') or '').strip(); t = a.get('temperature'); c = None
-    if re.fullmatch(r'-?[\d.]+', u): c = float(u)            # some Utah rows carry the reading in the units field
-    elif t is not None and t > -99:
-        c = (t - 32) * 5 / 9 if u == 'F' else t
-        # Eastern springs top out near 40 C (Hot Springs, VA); a "C" reading above 45 there is a Fahrenheit value
-        if u != 'F' and t > 45 and a.get('originating_state') in EAST: c = (t - 32) * 5 / 9; FIXED[0] += 1
+    if re.fullmatch(r'-?[\d.]+', u): c = float(u)            # some rows carry the reading in the units field
+    elif t is not None and t > -99: c = (t - 32) * 5 / 9 if u == 'F' else t
+    # Eastern springs top out near 40 C (Hot Springs, VA); a Celsius reading above 45 there is really Fahrenheit
+    if c is not None and u != 'F' and c > 45 and a.get('originating_state') in EAST: c = (c - 32) * 5 / 9; FIXED[0] += 1
     if c is not None and not (0 <= c <= 105): c = None
     d = a.get('tempmeasurementdatetime') or ''; yr = int(d[:4]) if d[:4].isdigit() and int(d[:4]) > 1901 else None   # 1899-1901 are placeholders
     src = re.sub(r'\s+', ' ', (a.get('source') or '').strip())
