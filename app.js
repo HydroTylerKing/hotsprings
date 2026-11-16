@@ -4,9 +4,9 @@
   'use strict';
 
   const NAMES = {AK:'Alaska',AZ:'Arizona',AR:'Arkansas',CA:'California',CO:'Colorado',FL:'Florida',GA:'Georgia',HI:'Hawaii',ID:'Idaho',MA:'Massachusetts',MT:'Montana',NV:'Nevada',NM:'New Mexico',NY:'New York',NC:'North Carolina',OR:'Oregon',SD:'South Dakota',TX:'Texas',UT:'Utah',VA:'Virginia',WA:'Washington',WV:'West Virginia',WY:'Wyoming'};
-  const COLORS = {B:'#d7191c', H:'#f28c28', W:'#f5d327', '':'#222'};
-  const LABEL = {B:'Boiling', H:'Hot', W:'Warm', '':'Not available'};
-  const ORDER = {'':0, W:1, H:2, B:3};
+  const COLORS = {B:'#d7191c', H:'#f28c28', W:'#f5d327', C:'#4a90c8', '':'#222'};
+  const LABEL = {B:'Boiling', H:'Hot', W:'Warm', C:'Cool', '':'Not available'};
+  const ORDER = {'':0, C:1, W:2, H:3, B:4};
   // Land status from USGS PAD-US (see data/springs.json land_source)
   const MGR = {USFS:'US Forest Service', BLM:'Bureau of Land Management', NPS:'National Park Service', FWS:'US Fish & Wildlife Service', USBR:'Bureau of Reclamation', DOD:'Dept. of Defense',
     SDNR:'State land', SDOL:'State land', SLB:'State trust land', SPR:'State parks', SFW:'State fish & wildlife', OTHS:'State', CNTY:'County', CITY:'City', REG:'Regional district',
@@ -144,14 +144,14 @@
 
   // ---------- State ----------
   let S = [], unit = store.get('wt-unit', 'F'), sel = null, current = [];
-  const show = {B:true, H:true, W:true, '':true};
+  const show = {B:true, H:true, W:true, C:true, '':true};
   const fmt = (d, u = unit) => d.f == null ? (d.cls ? LABEL[d.cls] : '—') : (u === 'F' ? d.f + '°F' : d.c + '°C');
   const tempLong = d => d.f == null ? (d.cls ? LABEL[d.cls] + ' (no reading listed)' : 'Not available') : d.f + '°F / ' + d.c + '°C';
 
   // Wikipedia article / Commons photo matched to each spring (data/media.json); text and credits load live
   let MEDIA = {};
   const mediaReady = fetch('data/media.json?v=2').then(r => r.ok ? r.json() : {m:{}}).then(j => { MEDIA = j.m || {}; }).catch(() => {});
-  Promise.all([fetch('data/springs.json?v=3').then(r => r.json()), mediaReady]).then(([j]) => init(j)).catch(err => {
+  Promise.all([fetch('data/springs.json?v=4').then(r => r.json()), mediaReady]).then(([j]) => init(j)).catch(err => {
     alertMsg('Could not load spring data (' + err + ').');
   });
 
@@ -159,6 +159,7 @@
   function init(json) {
     S = json.springs.map((r, i) => ({i, name:r[0] || 'Unnamed spring', unnamed:!r[0], st:r[1], lat:r[2], lon:r[3], f:r[4], c:r[5], cls:r[6], quad:(r[7] || '').replace(/^\(|\)$/g, ''), land:r[8] || null, ss:r[9] || null, moved:r[10] || null, added:r[11] === 'S'}));
     SS_SRC = json.ss_sources || [];
+    const sub = document.querySelector('header .sub'); if (sub) sub.textContent = S.length.toLocaleString() + ' springs across the US · data: NOAA Thermal Springs List (1980) and state geological surveys';
     S.forEach(d => { d.noaaNoTemp = !d.added && !!d.ss && d.ss[4] === 1; });   // NOAA listed no reading, so the state survey's is shown
     // markers (hotter drawn on top)
     S.slice().sort((a, b) => ORDER[a.cls] - ORDER[b.cls]).forEach(d => {
@@ -198,7 +199,7 @@
       const ok = lf === 'open' ? c === 'P' : lf === 'limited' ? c === 'R' || c === 'U' : lf === 'public' ? 'PRU'.includes(c) && c !== '' : c === '' || c === 'V' || c === 'N';
       if (!ok) return false;
     }
-    return show[d.cls] && (!st || d.st === st) && (!term || d.name.toLowerCase().includes(term)) && (m <= 60 || (d.f != null && d.f >= m));
+    return show[d.cls] && (!st || d.st === st) && (!term || d.name.toLowerCase().includes(term)) && (m <= 40 || (d.f != null && d.f >= m));
   }
   function update() {
     const inView = $('inView').checked && !document.querySelector('.app').classList.contains('max') ? map.getBounds() : (lastBounds && $('inView').checked ? lastBounds : null);
@@ -209,7 +210,7 @@
       if (ok && (!inView || inView.contains([d.lat, d.lon]))) visible.push(d);
     });
     if (sel && map.hasLayer(sel.m)) sel.m.bringToFront();
-    const s = sortSel.value, tv = d => d.f == null ? ({B:212, H:150, W:90}[d.cls] ?? -1) : d.f;
+    const s = sortSel.value, tv = d => d.f == null ? ({B:212, H:150, W:90, C:55}[d.cls] ?? -1) : d.f;
     const clean = n => n.replace(/^\W+/, '');
     if (s === 'near' && me) visible.forEach(d => d.dist = distMi(d));
     visible.sort(
@@ -408,10 +409,10 @@
 
   // ---------- Controls ----------
   function legendText() {
-    const t = unit === 'F' ? {B:'(≥194°F)', H:'(122–193°F)', W:'(<122°F)'} : {B:'(≥90°C)', H:'(50–89°C)', W:'(<50°C)'};
+    const t = unit === 'F' ? {B:'(≥194°F)', H:'(122–193°F)', W:'(68–121°F)', C:'(<68°F)'} : {B:'(≥90°C)', H:'(50–89°C)', W:'(20–49°C)', C:'(<20°C)'};
     document.querySelectorAll('.lt').forEach(el => el.textContent = t[el.dataset.k]);
   }
-  function minLabel() { const v = minF(); $('minTv').textContent = v <= 60 ? 'any' : (unit === 'F' ? v + '°F' : Math.round((v - 32) * 5 / 9) + '°C'); }
+  function minLabel() { const v = minF(); $('minTv').textContent = v <= 40 ? 'any' : (unit === 'F' ? v + '°F' : Math.round((v - 32) * 5 / 9) + '°C'); }
   function setUnit(u) {
     unit = u; store.set('wt-unit', u);
     document.querySelectorAll('#units button').forEach(x => x.classList.toggle('on', x.dataset.u === u));
@@ -419,7 +420,7 @@
   }
   $('units').addEventListener('click', e => { const b = e.target.closest('button'); if (b) setUnit(b.dataset.u); });
   function activeBadge() {
-    let n = 0; if (srcSel.value) n++; if (landSel.value) n++; if (mineSel.value) n++; if (q.value.trim()) n++; if (stSel.value) n++; if (minF() > 60) n++; if (sortSel.value !== 'name') n++; if (!$('inView').checked) n++;
+    let n = 0; if (srcSel.value) n++; if (landSel.value) n++; if (mineSel.value) n++; if (q.value.trim()) n++; if (stSel.value) n++; if (minF() > 40) n++; if (sortSel.value !== 'name') n++; if (!$('inView').checked) n++;
     const a = $('active'); a.textContent = n + (n === 1 ? ' filter' : ' filters'); a.style.display = n ? 'inline' : 'none';
   }
   const fold = $('fold'), ctr = $('controls');

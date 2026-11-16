@@ -44,6 +44,9 @@ def km(a, b, c, d):
 def dec(v):
     s = repr(float(v)); return len(s.split('.')[1]) if '.' in s and s.split('.')[1] != '0' else 0
 
+EAST = {'TN', 'WV', 'VA', 'GA', 'NC', 'MA', 'NH', 'MD', 'PA', 'NY', 'VT', 'ME', 'CT', 'AL', 'KY', 'SC'}
+FIXED = [0]
+
 # ---- fetch state-survey records
 F = 'OBJECTID,springname,othername,featuretype,originating_state,latdegree,longdegree,temperature,temperatureunits,tempmeasurementdatetime,source'
 raw, off = [], 0
@@ -60,7 +63,10 @@ for a in raw:
     if not lat or not lon or abs(lat) > 90: continue
     u = (a.get('temperatureunits') or '').strip(); t = a.get('temperature'); c = None
     if re.fullmatch(r'-?[\d.]+', u): c = float(u)            # some Utah rows carry the reading in the units field
-    elif t is not None and t > -99: c = (t - 32) * 5 / 9 if u == 'F' else t
+    elif t is not None and t > -99:
+        c = (t - 32) * 5 / 9 if u == 'F' else t
+        # Eastern springs top out near 40 C (Hot Springs, VA); a "C" reading above 45 there is a Fahrenheit value
+        if u != 'F' and t > 45 and a.get('originating_state') in EAST: c = (t - 32) * 5 / 9; FIXED[0] += 1
     if c is not None and not (0 <= c <= 105): c = None
     d = a.get('tempmeasurementdatetime') or ''; yr = int(d[:4]) if d[:4].isdigit() and int(d[:4]) > 1901 else None   # 1899-1901 are placeholders
     src = re.sub(r'\s+', ' ', (a.get('source') or '').strip())
@@ -101,13 +107,12 @@ for i, l in per.items():
     locs = sorted([a for a in l if a['kind'] == 'name' and a['prec'] >= 4 and 0.1 <= a['md'] <= 2], key=lambda a: (-a['prec'], a['md']))
     if temps or locs: out[i] = (temps[0] if temps else None, locs[0] if locs else None)
 
-# ---- new springs: unmatched, warm (>= 20 C) or named hot/warm, not near or named like a NOAA spring
+# ---- new springs: every unmatched spring (any temperature), not near or named like a NOAA spring
 GEN2 = {'COMPLEX'}
 NT = [dict(lat=r[2], lon=r[3], tk=toks(r[0], 3, GEN2)) for r in S]
 def clean(n): return re.sub(r'\s+', ' ', re.sub(r'^[A-Za-z .]+ County ', '', n)).strip()
-cands = [a for a in A if 'm' not in a and not a['copy'] and not a['well'] and a['st'] != 'TN' and a['name']
-         and ((a['c'] is not None and a['c'] >= 20) or (a['c'] is None and re.search(r'hot|warm|thermal', a['name'], re.I)))
-         and not re.search(r'fumarole|gas vent|\bgas\b|mine|missing|^unknown$|well\b', a['name'], re.I)]
+cands = [a for a in A if 'm' not in a and not a['copy'] and not a['well']
+         and not re.search(r'fumarole|gas vent|\bgas\b|\bmine\b|\bwell\b', a['name'], re.I)]
 cands = [a for a in cands if not any(abs(la - a['lat']) < 0.01 and abs(lo - a['lon']) < 0.013 and km(la, lo, a['lat'], a['lon']) < 0.5 for la, lo in ((r[2], r[3]) for r in S))]
 cands = [a for a in cands if not any(abs(n['lat'] - a['lat']) < 0.05 and abs(n['lon'] - a['lon']) < 0.07 and km(n['lat'], n['lon'], a['lat'], a['lon']) < 5
                                      and set(toks(clean(a['name']), 3, GEN2)) & set(n['tk']) for n in NT)]
@@ -118,7 +123,7 @@ for a in cands:
         keep.append(a)
 for a in keep:
     n = clean(a['name']) or 'Unnamed spring'
-    a['dname'] = 'Unnamed spring' if re.match(r'^(unnamed|no name|spring$)', n, re.I) else n
+    a['dname'] = 'Unnamed spring' if re.match(r'^(unnamed|no name|spring$|missing$|unknown$|none$)', n, re.I) else n
 
 # ---- land ownership (PAD-US 4.1 Fee Managers) at new springs and moved locations
 ORDER = {'OA': 0, 'RA': 1, 'UK': 2, 'XA': 3}
@@ -151,4 +156,5 @@ for i in sorted(out):
     U.append(row)
 NW = [[a['dname'], a['st'], ll(a['lat']), ll(a['lon']), F_(a['c']), r1(a['c']), a['yr'], sidx(a['src']), a['land']] for a in keep]
 json.dump({'SRC': SRC, 'U': U, 'NW': NW, 'fetched': time.strftime('%Y-%m-%d')}, open('data/ss_raw.json', 'w'), separators=(',', ':'), ensure_ascii=False)
+print('eastern C/F fixes:', FIXED[0])
 print('NOAA springs updated:', len(U), '| moved:', sum(1 for r in U if len(r) > 5), '| new springs:', len(NW), '| sources:', len(SRC))
