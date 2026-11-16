@@ -144,7 +144,7 @@
 
   // ---------- State ----------
   let S = [], unit = store.get('wt-unit', 'F'), sel = null, current = [];
-  const show = {B:true, H:true, W:true, C:true, '':true};
+  const show = {B:true, H:true, W:true, C:false, '':true};   // cool springs start hidden; tick Cool in the legend to show them
   const fmt = (d, u = unit) => d.f == null ? (d.cls ? LABEL[d.cls] : '—') : (u === 'F' ? d.f + '°F' : d.c + '°C');
   const tempLong = d => d.f == null ? (d.cls ? LABEL[d.cls] + ' (no reading listed)' : 'Not available') : d.f + '°F / ' + d.c + '°C';
 
