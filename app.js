@@ -150,7 +150,7 @@
 
   // Wikipedia article / Commons photo matched to each spring (data/media.json); text and credits load live
   let MEDIA = {};
-  const mediaReady = fetch('data/media.json?v=1').then(r => r.ok ? r.json() : {m:{}}).then(j => { MEDIA = j.m || {}; }).catch(() => {});
+  const mediaReady = fetch('data/media.json?v=2').then(r => r.ok ? r.json() : {m:{}}).then(j => { MEDIA = j.m || {}; }).catch(() => {});
   Promise.all([fetch('data/springs.json').then(r => r.json()), mediaReady]).then(([j]) => init(j)).catch(err => {
     alertMsg('Could not load spring data (' + err + ').');
   });
@@ -356,11 +356,19 @@
     const lib = await loadGoogle();
     const {places} = await lib.Place.searchByText({
       textQuery: title(d.name) + ' ' + NAMES[d.st],
-      fields: ['displayName', 'location', 'photos', 'googleMapsURI'],
+      fields: ['displayName', 'location', 'photos', 'googleMapsURI', 'types'],
       locationBias: {center: {lat: d.lat, lng: d.lon}, radius: 3000},
       maxResultCount: 5
     });
-    for (const p of places || []) {
+    // Only places that are the spring itself: natural features first, then parks, campgrounds, pools, spas and
+    // non-lodging attractions. Towns (their photos show the town) and hotels (first photo is usually the building) are skipped.
+    const kind = p => { const t = p.types || []; const has = x => t.includes(x);
+      if (has('natural_feature')) return 0;
+      if (['park', 'national_park', 'state_park', 'hiking_area', 'campground', 'swimming_pool', 'spa'].some(has) && !has('lodging')) return 1;
+      if (has('tourist_attraction') && !has('lodging')) return 2;
+      return -1; };
+    const cands = (places || []).filter(p => kind(p) >= 0).sort((a, b) => kind(a) - kind(b));
+    for (const p of cands) {
       if (!p.photos || !p.photos.length || !p.location) continue;
       const have = new Set(toks(p.displayName || ''));
       const nameOk = want.every(w => have.has(w) || have.has(w.replace(/s$/, '')) || have.has(w + 's'));
