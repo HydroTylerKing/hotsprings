@@ -4,7 +4,7 @@ An interactive map of 1,661 thermal (hot) springs in the United States, rebuilt 
 
 ## Features
 
-- Basemaps: USGS Topo, OpenTopoMap, satellite imagery (Esri), USGS imagery + topo, Esri Topo, shaded relief, OpenStreetMap streets, light and dark
+- Basemaps: USGS Topo, OpenTopoMap, satellite imagery (Esri), USGS imagery + topo, Esri Topo, shaded relief, OpenStreetMap streets, and Esri light and dark gray
 - An optional road and place-label overlay for the imagery basemaps
 - Springs colored by temperature (boiling, hot, warm, no data); the legend can be minimized and each class hidden
 - A popup for each spring showing its name, linked to Google Maps, and its temperature
@@ -40,4 +40,4 @@ This is a static site with no build step. To publish it with GitHub Pages, go to
 
 To run it locally: `python3 -m http.server`, then open http://localhost:8000.
 
-Leaflet 1.9.4 (BSD-2-Clause) is included in `vendor/leaflet`. Map tiles © USGS, Esri, OpenTopoMap, OpenStreetMap contributors and CARTO, as credited on the map.
+Leaflet 1.9.4 (BSD-2-Clause) is included in `vendor/leaflet`. Map tiles © USGS, Esri, OpenTopoMap and OpenStreetMap contributors, as credited on the map.

@@ -40,8 +40,8 @@
     {id:'esritopo', name:'Esri Topo', url:ESRI+'World_Topo_Map/MapServer/tile/{z}/{y}/{x}', opt:{maxNativeZoom:19, attribution:ESRI_ATTR}},
     {id:'relief', name:'Shaded relief', url:USGS+'USGSShadedReliefOnly/MapServer/tile/{z}/{y}/{x}', opt:{maxNativeZoom:16, attribution:USGS_ATTR}, imagery:true},
     {id:'osm', name:'Streets (OSM)', url:'https://tile.openstreetmap.org/{z}/{x}/{y}.png', opt:{maxNativeZoom:19, attribution:OSM_ATTR}},
-    {id:'light', name:'Light', url:'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', opt:{maxNativeZoom:20, subdomains:'abcd', attribution:OSM_ATTR + ' &copy; <a href="https://carto.com/attributions" target="_blank" rel="noopener">CARTO</a>'}},
-    {id:'dark', name:'Dark', url:'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', opt:{maxNativeZoom:20, subdomains:'abcd', attribution:OSM_ATTR + ' &copy; <a href="https://carto.com/attributions" target="_blank" rel="noopener">CARTO</a>'}, dark:true}
+    {id:'light', name:'Light', url:ESRI+'Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}', opt:{maxNativeZoom:16, attribution:ESRI_ATTR + ' (Light Gray Canvas)'}},
+    {id:'dark', name:'Dark', url:ESRI+'Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', opt:{maxNativeZoom:16, attribution:ESRI_ATTR + ' (Dark Gray Canvas)'}, dark:true}
   ];
   const thumb = b => b.url.replace('{s}', (b.opt.subdomains || 'a')[0]).replace('{z}', 5).replace('{x}', 5).replace('{y}', 11).replace('{r}', '');
 
