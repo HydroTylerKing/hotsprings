@@ -14,6 +14,7 @@ An interactive map of 1,661 thermal (hot) springs in the United States, rebuilt 
 - A land filter (any ownership, on public land, on public land with open access, on public land without open access, or on private land), with each spring's land unit and manager shown in its details
 - Descriptions and photos for 174 springs from Wikipedia and Wikimedia Commons, with author, license and date credits
 - Installable as an app (home-screen icon, full screen) with offline use: spring data, filters, saved springs and recently viewed map areas work without a signal
+- **Save this area for offline** (download button under the locate button): saves USGS Topo tiles for the area on screen, down to trail-level detail (up to 5,000 tiles per area), plus Wikipedia/Commons details for the springs in it. Saved areas are listed under Basemap → Offline areas, and with no signal the map switches to USGS Topo inside a saved area. Only USGS maps are downloadable in bulk (public domain); other basemaps' terms don't allow it.
 - Saved and visited springs, kept on your device, with a filter for each
 - A °F/°C switch
 - Shareable links to individual springs, such as `#spring-547`
@@ -32,7 +33,7 @@ The list has not been updated since 1980. Many springs are on private or closed 
 
 ## Install on a phone
 
-**iPhone/iPad:** open the site in Safari, tap Share, then Add to Home Screen. **Android:** tap "Install app" in the header, or use the browser menu. The service worker in `sw.js` caches the app and data for offline use. Map tiles you view are kept, up to about 3,000. Google Maps photos are never cached.
+**iPhone/iPad:** open the site in Safari, tap Share, then Add to Home Screen. **Android:** tap "Install app" in the header, or use the browser menu. The service worker in `sw.js` caches the app and data for offline use. Map tiles you view are kept, up to about 3,000; saved offline areas go in a separate `offline-v1` cache that is never trimmed. Tiles and photos are loaded with CORS so cached copies don't count as oversized "opaque" entries against storage. Google Maps photos are never cached.
 
 ## Deploy
 
