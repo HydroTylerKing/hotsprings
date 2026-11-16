@@ -1,3 +1,4 @@
+[hidden]{display:none!important}
 :root{
   /* palette sampled from the Wildflower Touring badge */
   --navy:#2c4a6e; --navy2:#3a597c; --leaf:#51634d; --poppy:#be6b47; --sky:#b4d8ea; --tint:#e6eff5;
@@ -6,7 +7,18 @@
 }
 *{box-sizing:border-box}
 html,body{margin:0;height:100%;font:14px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--paper)}
-header{background:var(--paper);color:var(--navy);padding:6px 14px;display:flex;align-items:center;gap:12px;border-bottom:3px solid var(--navy2);box-shadow:inset 0 -5px 0 -2px var(--poppy);height:56px}
+header{background:var(--paper);color:var(--navy);padding:calc(6px + env(safe-area-inset-top)) calc(14px + env(safe-area-inset-right)) 6px calc(14px + env(safe-area-inset-left));display:flex;align-items:center;gap:12px;border-bottom:3px solid var(--navy2);box-shadow:inset 0 -5px 0 -2px var(--poppy);height:calc(56px + env(safe-area-inset-top))}
+.htxt{min-width:0;flex:1}
+.installbtn{flex:none;border:1px solid var(--navy2);background:var(--navy2);color:#fff;border-radius:16px;padding:5px 12px;font:inherit;font-size:12.5px;font-weight:600;cursor:pointer}
+.installbtn:hover{background:var(--navy)}
+.offline{position:absolute;z-index:1002;top:54px;left:50%;transform:translateX(-50%);background:#3a3f47;color:#fff;font-size:12px;padding:5px 12px;border-radius:14px;box-shadow:0 2px 6px rgba(0,0,0,.25);white-space:nowrap}
+.mybtns{display:flex;gap:6px;margin:0 0 8px}
+.mybtn{border:1px solid #b9c3cf;background:#fff;color:var(--navy2);border-radius:14px;padding:4px 11px;font:inherit;font-size:12.5px;font-weight:600;cursor:pointer}
+.mybtn.on{background:var(--navy2);border-color:var(--navy2);color:#fff}
+.mybtn.vis.on{background:var(--leaf);border-color:var(--leaf)}
+#list .fv{flex:none;font-size:11px;color:var(--poppy);width:12px;text-align:center}
+#list .fv.v{color:var(--leaf)}
+#about .ab-install{display:block;margin:6px auto 0;padding:9px 16px;border:0;border-radius:6px;background:var(--leaf);color:#fff;font:inherit;font-weight:600;cursor:pointer}
 .seal{width:46px;height:46px;flex:none;display:block}
 .sealbtn{border:0;padding:0;background:none;cursor:pointer;border-radius:50%;flex:none;transition:transform .15s}
 .sealbtn:hover{transform:scale(1.06)}
@@ -29,7 +41,8 @@ header{background:var(--paper);color:var(--navy);padding:6px 14px;display:flex;a
 @media (max-width:760px){#about{padding:18px 18px 14px}#about .ab-logo{width:150px;height:150px}}
 header h1{font-size:17px;margin:0;font-weight:800;letter-spacing:.6px;text-transform:uppercase;color:var(--navy2)}
 header .sub{font-size:11.5px;color:var(--muted)}
-.app{display:flex;height:calc(100% - 56px)}
+.app{display:flex;height:calc(100% - 56px - env(safe-area-inset-top))}
+#mine,.controls #land{width:100%}
 #mapwrap{position:relative;flex:1;min-width:0}
 #map{position:absolute;inset:0;background:#dfe9f1}
 .leaflet-container{font:inherit}
@@ -83,7 +96,7 @@ aside{width:340px;flex:none;background:#fff;border-left:1px solid var(--line);di
 .fold .active{font-weight:600;text-transform:none;letter-spacing:0;font-size:11px;background:var(--navy2);color:#fff;border-radius:9px;padding:1px 7px;display:none}
 .controls[hidden]{display:none!important}
 .controls{padding:10px;display:grid;gap:8px;border-bottom:1px solid var(--line)}
-.controls input[type=search],.controls select,#land{width:100%;padding:6px 8px;border:1px solid #a9b0b9;border-radius:3px;font:inherit;background:#fff}
+.controls input[type=search],.controls select,#land,#mine{width:100%;padding:6px 8px;border:1px solid #a9b0b9;border-radius:3px;font:inherit;background:#fff}
 .row{display:flex;gap:8px;align-items:center}
 .row>*{flex:1;min-width:0}
 .inview{display:flex;align-items:center;gap:6px;font-size:12.5px;cursor:pointer}
@@ -132,7 +145,7 @@ aside{width:340px;flex:none;background:#fff;border-left:1px solid var(--line);di
 .landtag{display:inline-block;font-size:11px;font-weight:600;border-radius:9px;padding:1px 7px;margin-left:4px;vertical-align:1px}
 .landtag.pub{background:#e3f0da;color:#2f5a1e}.landtag.res{background:#fdf0d5;color:#7a5410}.landtag.no{background:#eee;color:#555}
 .thead{display:none}
-.foot{font-size:10.5px;color:var(--muted);padding:6px 10px;border-top:1px solid var(--line)}
+.foot{font-size:10.5px;color:var(--muted);padding:6px 10px calc(6px + env(safe-area-inset-bottom));border-top:1px solid var(--line)}
 .foot a{color:var(--navy2)}
 
 /* Collapsed results: list hidden, map gets the room */
@@ -164,10 +177,11 @@ aside{width:340px;flex:none;background:#fff;border-left:1px solid var(--line);di
 .app.max .controls .row{grid-column:span 2}
 
 @media (max-width:760px){
-  header{height:50px}
+  header{height:calc(50px + env(safe-area-inset-top))}
+  .installbtn{padding:4px 9px;font-size:11.5px}
   .seal{width:40px;height:40px}
   header h1{font-size:13.5px;letter-spacing:.3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis} header>div{min-width:0} header .sub{display:none}
-  .app{flex-direction:column;height:calc(100% - 50px)}
+  .app{flex-direction:column;height:calc(100% - 50px - env(safe-area-inset-top))}
   #mapwrap{flex:none;height:52%}
   .app.rc #mapwrap{flex:1;height:auto}
   .app.rc aside{flex:none;max-height:60%;overflow:auto}

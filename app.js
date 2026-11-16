@@ -136,6 +136,11 @@
   // Hover labels only where a real hover exists; on touch screens a tap would show the label and the popup together.
   const canHover = !!(window.matchMedia && matchMedia('(hover: hover) and (pointer: fine)').matches);
 
+  // ---------- Saved & visited (kept on this device) ----------
+  const loadSet = k => { try { return new Set(JSON.parse(store.get(k, '[]'))); } catch (e) { return new Set(); } };
+  const saved = loadSet('wt-saved'), visited = loadSet('wt-visited');
+  const saveSet = (k, s) => store.set(k, JSON.stringify([...s]));
+
   // ---------- State ----------
   let S = [], unit = store.get('wt-unit', 'F'), sel = null, current = [];
   const show = {B:true, H:true, W:true, '':true};
@@ -170,16 +175,17 @@
   // ---------- Marker size by zoom ----------
   function restyle() {
     const z = map.getZoom(), r = z < 5 ? 4 : z < 7 ? 5 : z < 10 ? 6.5 : 8;
-    S.forEach(d => d.m.setStyle(d === sel ? {radius:r + 3, weight:3, color:'#00a3ff', opacity:1} : {radius:r, weight:1, color:curBM && (curBM.dark || curBM.imagery) ? '#fff' : '#000', opacity:curBM && (curBM.dark || curBM.imagery) ? .8 : .55}));
+    S.forEach(d => d.m.setStyle(d === sel ? {radius:r + 3, weight:3, color:'#00a3ff', opacity:1} : saved.has(d.i) ? {radius:r + 1, weight:2.5, color:'#be6b47', opacity:1} : {radius:r, weight:1, color:curBM && (curBM.dark || curBM.imagery) ? '#fff' : '#000', opacity:curBM && (curBM.dark || curBM.imagery) ? .8 : .55}));
   }
   map.on('zoomend', restyle);
   map.on('baselayerchange', restyle);
 
   // ---------- Filtering ----------
-  const q = $('q'), stSel = $('state'), sortSel = $('sort'), minT = $('minT'), landSel = $('land');
+  const q = $('q'), stSel = $('state'), sortSel = $('sort'), minT = $('minT'), landSel = $('land'), mineSel = $('mine');
   const minF = () => +minT.value;
   function passes(d) {
-    const term = q.value.trim().toLowerCase(), st = stSel.value, m = minF(), lf = landSel.value;
+    const term = q.value.trim().toLowerCase(), st = stSel.value, m = minF(), lf = landSel.value, mf = mineSel.value;
+    if (mf && !(mf === 'saved' ? saved.has(d.i) : mf === 'visited' ? visited.has(d.i) : !visited.has(d.i))) return false;
     if (lf) {
       const c = d.land ? d.land[0] : '';
       // private = no PAD-US parcel (usually private), private ranches, or nonprofit preserves
@@ -222,7 +228,7 @@
       const el = document.createElement('div');
       el.className = 'it' + (d === sel ? ' sel' : ''); el.dataset.i = d.i;
       const dist = d.dist != null && me ? (d.dist < 10 ? d.dist.toFixed(1) : Math.round(d.dist).toLocaleString()) + ' mi' : '';
-      el.innerHTML = '<span class="dot" style="background:' + COLORS[d.cls] + '"></span><span class="nm">' + esc(title(d.name)) + '</span><span class="st">' + d.st +
+      el.innerHTML = '<span class="dot" style="background:' + COLORS[d.cls] + '"></span>' + (saved.has(d.i) ? '<span class="fv" title="Saved">★</span>' : visited.has(d.i) ? '<span class="fv v" title="Visited">✓</span>' : '') + '<span class="nm">' + esc(title(d.name)) + '</span><span class="st">' + d.st +
         '</span><span class="tp">' + fmt(d) + '</span><span class="tc">' + (d.c == null ? '—' : d.c + '°C') + '</span><span class="cl">' + LABEL[d.cls] +
         '</span><span class="ld" title="' + esc(d.land ? d.land[2] : '') + '">' + esc(d.land ? d.land[2] : landShort(d)) + '</span><span class="qd">' + esc(d.quad) + '</span><span class="ds">' + dist +
         '</span>' + (MEDIA[d.i] ? '<span class="mi" title="' + (MEDIA[d.i][1] ? 'Has photo' : 'Has description') + '">' + (MEDIA[d.i][1] ? CAM : BOOK) + '</span>' : '<span class="mi"></span>') + '<a class="gm" title="Open in Google Maps" target="_blank" rel="noopener" href="' + gmaps(d) + '">' + PIN + '</a>';
@@ -248,7 +254,8 @@
     const det = $('detail'); det.style.display = 'block';
     const lat = Math.abs(d.lat).toFixed(3) + '°' + (d.lat >= 0 ? 'N' : 'S'), lon = Math.abs(d.lon).toFixed(3) + '°' + (d.lon < 0 ? 'W' : 'E');
     const dist = distMi(d);
-    det.innerHTML = '<button class="x" title="Close">✕</button><h2>' + esc(title(d.name)) + '</h2><table>' +
+    det.innerHTML = '<button class="x" title="Close">✕</button><h2>' + esc(title(d.name)) + '</h2>' +
+      '<div class="mybtns"><button class="mybtn sav' + (saved.has(d.i) ? ' on' : '') + '">' + (saved.has(d.i) ? '★ Saved' : '☆ Save') + '</button><button class="mybtn vis' + (visited.has(d.i) ? ' on' : '') + '">' + (visited.has(d.i) ? '✓ Visited' : 'Mark visited') + '</button></div><table>' +
       '<tr><td>State</td><td>' + NAMES[d.st] + '</td></tr>' +
       '<tr><td>Temperature</td><td>' + tempLong(d) + '</td></tr>' +
       '<tr><td>Class</td><td><span class="dot" style="background:' + COLORS[d.cls] + ';vertical-align:-1px"></span> ' + LABEL[d.cls] + '</td></tr>' +
@@ -257,6 +264,8 @@
       (d.quad ? '<tr><td>USGS quadrangle</td><td>' + esc(d.quad) + '</td></tr>' : '') +
       (dist != null ? '<tr><td>Distance from you</td><td>' + Math.round(dist).toLocaleString() + ' mi (straight line)</td></tr>' : '') +
       '</table><div class="gphoto" id="gphoto" hidden></div>' + (MEDIA[d.i] ? '<div class="about" id="about"><div class="ab-load">Loading description…</div></div>' : '') + '<a class="gbtn" target="_blank" rel="noopener" href="' + gmaps(d) + '">' + PIN + ' Open in Google Maps</a>';
+    det.querySelector('.mybtn.sav').onclick = e => { saved.has(d.i) ? saved.delete(d.i) : saved.add(d.i); saveSet('wt-saved', saved); e.currentTarget.classList.toggle('on', saved.has(d.i)); e.currentTarget.textContent = saved.has(d.i) ? '★ Saved' : '☆ Save'; restyle(); renderList(); };
+    det.querySelector('.mybtn.vis').onclick = e => { visited.has(d.i) ? visited.delete(d.i) : visited.add(d.i); saveSet('wt-visited', visited); e.currentTarget.classList.toggle('on', visited.has(d.i)); e.currentTarget.textContent = visited.has(d.i) ? '✓ Visited' : 'Mark visited'; renderList(); };
     if (MEDIA[d.i]) loadAbout(d);
     loadGooglePhoto(d);
     det.querySelector('.x').onclick = () => { sel = null; det.style.display = 'none'; map.closePopup(); restyle(); list.querySelectorAll('.it.sel').forEach(e => e.classList.remove('sel')); setHash(''); };
@@ -382,13 +391,14 @@
   }
   $('units').addEventListener('click', e => { const b = e.target.closest('button'); if (b) setUnit(b.dataset.u); });
   function activeBadge() {
-    let n = 0; if (landSel.value) n++; if (q.value.trim()) n++; if (stSel.value) n++; if (minF() > 60) n++; if (sortSel.value !== 'name') n++; if (!$('inView').checked) n++;
+    let n = 0; if (landSel.value) n++; if (mineSel.value) n++; if (q.value.trim()) n++; if (stSel.value) n++; if (minF() > 60) n++; if (sortSel.value !== 'name') n++; if (!$('inView').checked) n++;
     const a = $('active'); a.textContent = n + (n === 1 ? ' filter' : ' filters'); a.style.display = n ? 'inline' : 'none';
   }
   const fold = $('fold'), ctr = $('controls');
   fold.onclick = () => { const open = ctr.hidden; ctr.hidden = !open; fold.setAttribute('aria-expanded', open); if (open) q.focus({preventScroll:true}); };
   q.addEventListener('input', update);
   landSel.addEventListener('change', update);
+  mineSel.addEventListener('change', update);
   $('inView').addEventListener('change', update);
   sortSel.addEventListener('change', () => { if (sortSel.value === 'near' && !me) locate(false); update(); });
   minT.addEventListener('input', () => { minLabel(); update(); });
@@ -423,6 +433,20 @@
   }
   rfold.onclick = () => setResults(app.classList.contains('rc'));
   new ResizeObserver(() => map.invalidateSize()).observe($('mapwrap'));
+  // ---------- App: offline support, install button, offline notice ----------
+  if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+    window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+  }
+  const standalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone;
+  let installEvt = null;
+  window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); installEvt = e; if (!standalone) { $('installbtn').hidden = false; $('aboutInstall').hidden = false; } });
+  const doInstall = async () => { if (!installEvt) { openAbout(); return; } installEvt.prompt(); try { await installEvt.userChoice; } catch (e) {} installEvt = null; $('installbtn').hidden = true; $('aboutInstall').hidden = true; };
+  $('installbtn').onclick = doInstall; $('aboutInstall').onclick = doInstall;
+  window.addEventListener('appinstalled', () => { $('installbtn').hidden = true; $('aboutInstall').hidden = true; });
+  if (standalone) $('installHelp').textContent = 'You\'re using the installed app. Spring data and the areas you\'ve viewed are saved for offline use.';
+  const netState = () => { $('offline').hidden = navigator.onLine; };
+  window.addEventListener('online', netState); window.addEventListener('offline', netState); netState();
+
   // ---------- About dialog (logo click, or #about link) ----------
   const aboutDlg = $('about');
   function openAbout() { if (!aboutDlg.open) { if (aboutDlg.showModal) aboutDlg.showModal(); else aboutDlg.setAttribute('open', ''); } }
