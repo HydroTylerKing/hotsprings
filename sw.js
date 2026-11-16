@@ -3,12 +3,13 @@
    - Map tiles you have viewed are kept (up to TILE_MAX) so recently seen areas still draw offline.
    - Wikipedia/Commons text and photos are cached after first view.
    - Google Maps photos are never cached (Google's terms); they simply don't show offline. */
-const VERSION = 'wt-v22';
+const VERSION = 'wt-v23';
 const SHELL = 'shell-' + VERSION;
 const TILES = 'tiles-v1';
 const WIKI = 'wiki-v1';
 const TILE_MAX = 3000;
 const WIKI_MAX = 600;
+const SAVED = 'offline-v1';
 
 const PRECACHE = [
   './', 'index.html', 'privacy.html', 'style.css', 'app.js', 'config.js', 'manifest.webmanifest',
@@ -53,9 +54,12 @@ async function shellNetFirst(req) {
 
 // Tiles: cache first; fetch and remember when missing.
 async function tileFirst(req) {
+  const saved = await (await caches.open(SAVED)).match(req);
+  if (saved) return saved;
   const c = await caches.open(TILES);
   const hit = await c.match(req);
-  if (hit) return hit;
+  // A CORS image request can't use an older opaque copy, so refetch in that case.
+  if (hit && !(req.mode === 'cors' && hit.type === 'opaque')) return hit;
   try {
     const r = await fetch(req);
     if (r.ok || r.type === 'opaque') { c.put(req, r.clone()); if (Math.random() < 0.02) trim(TILES, TILE_MAX); }
@@ -70,7 +74,7 @@ async function netFirst(req, cacheName, max) {
     const r = await fetch(req);
     if (r.ok || r.type === 'opaque') { c.put(req, r.clone()); if (Math.random() < 0.05) trim(cacheName, max); }
     return r;
-  } catch (err) { return (await c.match(req)) || Response.error(); }
+  } catch (err) { return (await c.match(req)) || (await (await caches.open(SAVED)).match(req)) || Response.error(); }
 }
 
 self.addEventListener('fetch', e => {

@@ -14,7 +14,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="theme-color" content="#f2f0e4">
 <link rel="stylesheet" href="vendor/leaflet/leaflet.css">
-<link rel="stylesheet" href="style.css?v=16">
+<link rel="stylesheet" href="style.css?v=17">
 </head>
 <body>
 <header>
@@ -26,12 +26,15 @@
   <div id="mapwrap">
     <div id="map" aria-label="Map of US thermal springs"></div>
     <div class="offline" id="offline" hidden>Offline · springs, filters and saved areas still work</div>
+    <div class="offpanel" id="offpanel" hidden role="dialog" aria-label="Save this area for offline"></div>
     <div class="bm" id="bm">
       <button id="bmbtn" aria-expanded="false"><svg width="15" height="15" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2 1 8l11 6 11-6zm-9.2 9.5L1 12.5l11 6 11-6-1.8-1-9.2 5zm0 4L1 16.5l11 6 11-6-1.8-1-9.2 5z"/></svg>Basemap</button>
       <div class="menu">
         <div class="grid" id="bmgrid"></div>
         <div class="hdr">Overlays</div>
         <label><input type="checkbox" id="ovLabels"> Roads &amp; place labels <span class="hint">(for imagery)</span></label>
+        <div class="hdr" id="offhdr">Offline areas</div>
+        <div id="offareas"></div>
       </div>
     </div>
     <div class="legend" id="legend">
@@ -102,6 +105,6 @@
 </dialog>
 <script src="vendor/leaflet/leaflet.js"></script>
 <script src="config.js?v=13"></script>
-<script src="app.js?v=20"></script>
+<script src="app.js?v=21"></script>
 </body>
 </html>

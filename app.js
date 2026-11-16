@@ -65,16 +65,16 @@
     s.onclick = () => setBM(b.id, true);
     grid.appendChild(s);
   });
-  function setBM(id, userPicked) {
+  function setBM(id, userPicked, keep) {
     const b = BASEMAPS.find(x => x.id === id) || BASEMAPS[0];
     if (baseLayer) map.removeLayer(baseLayer);
-    baseLayer = L.tileLayer(b.url, Object.assign({maxZoom:19, detectRetina:false}, b.opt)).addTo(map);
+    baseLayer = L.tileLayer(b.url, Object.assign({maxZoom:19, detectRetina:false}, b.url.startsWith(USGS) ? {crossOrigin:'anonymous'} : {}, b.opt)).addTo(map);
     baseLayer.bringToBack();
     curBM = b;
     grid.querySelectorAll('.sw').forEach(s => s.classList.toggle('on', s.dataset.id === b.id));
     if (userPicked) { $('ovLabels').checked = !!b.imagery; }
     applyLabels();
-    store.set('wt-bm', b.id);
+    if (!keep) store.set('wt-bm', b.id);
   }
   function applyLabels() {
     if ($('ovLabels').checked) labels.addTo(map); else map.removeLayer(labels);
@@ -287,19 +287,20 @@
   const mediaCache = {};
   const fmtDate = s => { if (!s) return ''; const m = /^(\d{4})(?:[-:](\d{2}))?(?:[-:](\d{2}))?/.exec(String(s).trim()); if (!m) return ''; const dt = new Date(Date.UTC(+m[1], m[2] ? +m[2] - 1 : 0, m[3] ? +m[3] : 1)); return m[3] ? dt.toLocaleDateString(undefined, {year:'numeric', month:'short', day:'numeric', timeZone:'UTC'}) : m[2] ? dt.toLocaleDateString(undefined, {year:'numeric', month:'short', timeZone:'UTC'}) : m[1]; };
   const stripHtml = s => { const el = document.createElement('div'); el.innerHTML = s || ''; return (el.textContent || '').replace(/\s+/g, ' ').trim(); };
-  async function wikiApi(base, params) {
-    const p = new URLSearchParams(Object.assign({action:'query', format:'json', formatversion:'2', origin:'*'}, params));
-    const r = await fetch(base + '?' + p); return r.json();
-  }
+  const WP_API = 'https://en.wikipedia.org/w/api.php', WC_API = 'https://commons.wikimedia.org/w/api.php';
+  const wikiUrl = (base, params) => base + '?' + new URLSearchParams(Object.assign({action:'query', format:'json', formatversion:'2', origin:'*'}, params));
+  const wpParams = title => ({prop:'extracts|revisions|info', titles:title, exintro:1, explaintext:1, exsentences:4, rvprop:'timestamp', rvlimit:1, inprop:'url', redirects:1});
+  const wcParams = file => ({prop:'imageinfo', titles:file, iiprop:'url|extmetadata', iiurlwidth:640});
+  async function wikiApi(base, params) { const r = await fetch(wikiUrl(base, params)); return r.json(); }
   async function getMedia(i) {
     if (mediaCache[i]) return mediaCache[i];
     const [title, file] = MEDIA[i]; const out = {};
     const jobs = [];
-    if (title) jobs.push(wikiApi('https://en.wikipedia.org/w/api.php', {prop:'extracts|revisions|info', titles:title, exintro:1, explaintext:1, exsentences:4, rvprop:'timestamp', rvlimit:1, inprop:'url', redirects:1}).then(j => {
+    if (title) jobs.push(wikiApi(WP_API, wpParams(title)).then(j => {
       const p = j.query && j.query.pages && j.query.pages[0];
       if (p && !p.missing && p.extract) out.wiki = {title:p.title, text:p.extract, url:p.fullurl, edited:p.revisions && p.revisions[0] && p.revisions[0].timestamp};
     }).catch(() => {}));
-    if (file) jobs.push(wikiApi('https://commons.wikimedia.org/w/api.php', {prop:'imageinfo', titles:file, iiprop:'url|extmetadata', iiurlwidth:640}).then(j => {
+    if (file) jobs.push(wikiApi(WC_API, wcParams(file)).then(j => {
       const p = j.query && j.query.pages && j.query.pages[0], ii = p && p.imageinfo && p.imageinfo[0];
       if (!ii) return; const md = ii.extmetadata || {}; const v = k => md[k] && md[k].value;
       const lic = stripHtml(v('LicenseShortName'));
@@ -442,6 +443,161 @@
   }
   rfold.onclick = () => setResults(app.classList.contains('rc'));
   new ResizeObserver(() => { if ($('mapwrap').offsetWidth) map.invalidateSize(); }).observe($('mapwrap'));
+  // ---------- Saved offline areas (USGS Topo tiles + spring details) ----------
+  // USGS maps are public domain, so they're the one basemap we download in bulk. Saved copies live in their
+  // own cache that is never trimmed; the service worker checks it before the network.
+  const OFF_CACHE = 'offline-v1', OFF_MAX = 5000, OFF_ZMAX = 16, OFF_EST = 25 * 1024;
+  const USGS_TOPO = USGS + 'USGSTopo/MapServer/tile/';
+  const offOk = 'caches' in window && 'serviceWorker' in navigator;
+  const areasGet = () => { try { return JSON.parse(store.get('wt-offline', '[]')) || []; } catch (e) { return []; } };
+  const areasSet = a => store.set('wt-offline', JSON.stringify(a));
+  const tX = (lon, z) => Math.floor((lon + 180) / 360 * 2 ** z);
+  const tY = (lat, z) => { const r = Math.max(-85.05, Math.min(85.05, lat)) * Math.PI / 180; return Math.floor((1 - Math.log(Math.tan(r) + 1 / Math.cos(r)) / Math.PI) / 2 * 2 ** z); };
+  function tileRange(b, z) {   // b: [[s,w],[n,e]]
+    const n = 2 ** z, x0 = Math.max(0, tX(b[0][1], z)), x1 = Math.min(n - 1, tX(b[1][1], z));
+    const y0 = Math.max(0, tY(b[1][0], z)), y1 = Math.min(n - 1, tY(b[0][0], z));
+    return {x0, x1, y0, y1, count:(x1 - x0 + 1) * (y1 - y0 + 1)};
+  }
+  function* tileUrls(a) { for (let z = a.zmin; z <= a.zmax; z++) { const r = tileRange(a.b, z); for (let x = r.x0; x <= r.x1; x++) for (let y = r.y0; y <= r.y1; y++) yield USGS_TOPO + z + '/' + y + '/' + x; } }
+  function planArea() {
+    const bb = map.getBounds(), b = [[bb.getSouth(), Math.max(-180, bb.getWest())], [bb.getNorth(), Math.min(180, bb.getEast())]];
+    const zmin = Math.max(2, Math.floor(map.getZoom()) - 2);
+    let zmax = Math.min(OFF_ZMAX, Math.max(zmin, Math.floor(map.getZoom()) + 6)), count = 0;
+    for (;;) { count = 0; for (let z = zmin; z <= zmax; z++) count += tileRange(b, z).count; if (count <= OFF_MAX || zmax <= Math.floor(map.getZoom())) break; zmax--; }
+    const springs = S.filter(d => d.lat >= b[0][0] && d.lat <= b[1][0] && d.lon >= b[0][1] && d.lon <= b[1][1]);
+    const c = bb.getCenter(); let near = null, best = 1e9;
+    springs.forEach(d => { const k = (d.lat - c.lat) ** 2 + ((d.lon - c.lng) * Math.cos(c.lat * Math.PI / 180)) ** 2; if (k < best) { best = k; near = d; } });
+    const states = {}; springs.forEach(d => states[d.st] = (states[d.st] || 0) + 1);
+    const st = Object.keys(states).sort((p, q) => states[q] - states[p]).slice(0, 2).join(' / ');
+    const name = near ? 'Near ' + (near.unnamed ? 'unnamed spring' : title(near.name)) + (st ? ', ' + st : '') : 'Area at ' + c.lat.toFixed(2) + ', ' + c.lng.toFixed(2);
+    return {id:'a' + Date.now().toString(36), name, b, zmin, zmax, count, tooBig:count > OFF_MAX, springs:springs.map(d => d.i), center:[c.lat, c.lng], zoom:map.getZoom()};
+  }
+  const fmtMB = n => n >= 1048576 ? (n / 1048576).toFixed(n >= 10485760 ? 0 : 1) + ' MB' : Math.max(1, Math.round(n / 1024)) + ' KB';
+  const zoomWord = z => z >= 15 ? 'trail detail' : z >= 13 ? 'road detail' : z >= 11 ? 'town detail' : 'overview';
+
+  // Download one area: tiles (4 at a time, polite to the USGS servers) then Wikipedia/Commons details.
+  let offJob = null;
+  async function saveArea(a, onProg) {
+    const c = await caches.open(OFF_CACHE); let done = 0, bytes = 0, failed = 0;
+    const urls = tileUrls(a); const job = offJob = {cancel:false};
+    const media = a.springs.filter(i => MEDIA[i]);
+    const total = a.count + media.length;
+    const worker = async () => {
+      for (let n = urls.next(); !n.done; n = urls.next()) {
+        if (job.cancel) return;
+        try {
+          let r = await c.match(n.value);
+          if (!r) { r = await fetch(n.value, {mode:'cors'}); if (r.ok) { const blob = await r.clone().blob(); bytes += blob.size; await c.put(n.value, r); } else failed++; }
+          else bytes += OFF_EST;
+        } catch (e) { failed++; }
+        onProg(++done, total, bytes);
+      }
+    };
+    await Promise.all([worker(), worker(), worker(), worker()]);
+    for (const i of media) {
+      if (job.cancel) break;
+      const [t, f] = MEDIA[i];
+      try {
+        if (t) { const u = wikiUrl(WP_API, wpParams(t)); const r = await fetch(u); if (r.ok) await c.put(u, r); }
+        if (f) {
+          const u = wikiUrl(WC_API, wcParams(f)); const r = await fetch(u);
+          if (r.ok) { const j = await r.clone().json(); await c.put(u, r); const ii = j.query && j.query.pages && j.query.pages[0] && j.query.pages[0].imageinfo; const src = ii && ii[0] && (ii[0].thumburl || ii[0].url); if (src) { const p = await fetch(src, {mode:'cors'}); if (p.ok) { bytes += (await p.clone().blob()).size; await c.put(src, p); } } }
+        }
+      } catch (e) { /* skip this spring */ }
+      onProg(++done, total, bytes);
+    }
+    offJob = null;
+    return {cancelled:job.cancel, bytes, failed};
+  }
+  async function deleteArea(id) {
+    const all = areasGet(), a = all.find(x => x.id === id); if (!a) return;
+    const rest = all.filter(x => x.id !== id); areasSet(rest);
+    const keep = new Set(); rest.forEach(o => { for (const u of tileUrls(o)) keep.add(u); });
+    const c = await caches.open(OFF_CACHE);
+    for (const u of tileUrls(a)) if (!keep.has(u)) await c.delete(u);
+    renderAreas();
+  }
+  const inArea = ll => areasGet().some(a => ll.lat >= a.b[0][0] && ll.lat <= a.b[1][0] && ll.lng >= a.b[0][1] && ll.lng <= a.b[1][1]);
+
+  // Panel shown by the download button.
+  const offPanel = $('offpanel');
+  function closeOff() { if (offJob) return; offPanel.hidden = true; }
+  function openOff() {
+    if (!offOk) { alertMsg('Offline maps need a newer browser.'); return; }
+    if (!navigator.onLine) { offPanel.hidden = false; offPanel.innerHTML = '<div class="op-h">Save this area for offline</div><p>You\'re offline. Connect to the internet to save an area.</p><div class="op-btns"><button type="button" class="op-cancel">Close</button></div>'; offPanel.querySelector('.op-cancel').onclick = closeOff; return; }
+    const a = planArea();
+    offPanel.hidden = false;
+    if (a.tooBig) {
+      offPanel.innerHTML = '<div class="op-h">Save this area for offline</div><p>This area is too large to save. Zoom in to a trip-sized area (about one county or national forest) and try again.</p><div class="op-btns"><button type="button" class="op-cancel">Close</button></div>';
+      offPanel.querySelector('.op-cancel').onclick = closeOff; return;
+    }
+    const media = a.springs.filter(i => MEDIA[i]).length;
+    offPanel.innerHTML = '<div class="op-h">Save this area for offline</div>' +
+      '<div class="op-name"></div>' +
+      '<ul class="op-facts"><li>USGS Topo map, ' + zoomWord(a.zmin) + ' to ' + zoomWord(a.zmax) + ' (zoom ' + a.zmin + '–' + a.zmax + ')</li>' +
+      '<li>' + a.springs.length.toLocaleString() + ' spring' + (a.springs.length === 1 ? '' : 's') + (media ? ', with photos and descriptions for ' + media : '') + '</li>' +
+      '<li>' + a.count.toLocaleString() + ' map tiles · about ' + fmtMB(a.count * OFF_EST) + '</li></ul>' +
+      '<div class="op-prog" hidden><div class="op-bar"><span></span></div><div class="op-ptxt"></div></div>' +
+      '<div class="op-btns"><button type="button" class="op-cancel">Cancel</button><button type="button" class="op-save">Save</button></div>';
+    offPanel.querySelector('.op-name').textContent = a.name;
+    offPanel.querySelector('.op-cancel').onclick = () => { if (offJob) offJob.cancel = true; else closeOff(); };
+    offPanel.querySelector('.op-save').onclick = async e => {
+      e.currentTarget.hidden = true;
+      if (navigator.storage && navigator.storage.persist) { try { await navigator.storage.persist(); } catch (err) {} }
+      const prog = offPanel.querySelector('.op-prog'), bar = prog.querySelector('span'), ptxt = prog.querySelector('.op-ptxt');
+      prog.hidden = false;
+      const res = await saveArea(a, (d, t, b) => { bar.style.width = (100 * d / t).toFixed(1) + '%'; ptxt.textContent = 'Saving… ' + Math.round(100 * d / t) + '% · ' + fmtMB(b); });
+      if (res.cancelled) { closeOff(); return; }
+      areasSet(areasGet().concat([{id:a.id, name:a.name, b:a.b, zmin:a.zmin, zmax:a.zmax, count:a.count, springs:a.springs.length, bytes:res.bytes, date:new Date().toISOString().slice(0, 10), center:a.center, zoom:a.zoom}]));
+      renderAreas();
+      offPanel.innerHTML = '<div class="op-h">Saved for offline</div><div class="op-name"></div><p>' + fmtMB(res.bytes) + ' saved' +
+        (res.failed ? ' (' + res.failed + ' tiles couldn\'t be downloaded; try again later to fill gaps)' : '') + '. Find it under <b>Basemap → Offline areas</b>. With no signal, the map switches to USGS Topo here.</p>' +
+        '<div class="op-btns"><button type="button" class="op-save">Done</button></div>';
+      offPanel.querySelector('.op-name').textContent = a.name;
+      offPanel.querySelector('.op-save').onclick = closeOff;
+    };
+  }
+  L.DomEvent.disableClickPropagation(offPanel); L.DomEvent.disableScrollPropagation(offPanel);
+  const OffCtl = L.Control.extend({
+    options:{position:'topleft'},
+    onAdd() {
+      const bar = L.DomUtil.create('div', 'leaflet-bar');
+      const a = L.DomUtil.create('a', 'offdl', bar);
+      a.href = '#'; a.title = 'Save this area for offline'; a.setAttribute('role', 'button'); a.setAttribute('aria-label', 'Save this area for offline');
+      a.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" d="M12 4v11m-5-5 5 5 5-5M5 20h14"/></svg>';
+      L.DomEvent.on(a, 'click', e => { L.DomEvent.preventDefault(e); L.DomEvent.stopPropagation(e); if (offPanel.hidden) openOff(); else closeOff(); });
+      return bar;
+    }
+  });
+  if (offOk) new OffCtl().addTo(map);
+
+  // Saved-area list inside the basemap menu.
+  function renderAreas() {
+    const box = $('offareas'), all = areasGet();
+    $('offhdr').hidden = box.hidden = !offOk;
+    if (!all.length) { box.innerHTML = '<div class="hint">None yet. Zoom to a trip area and tap the download button.</div>'; return; }
+    box.innerHTML = '';
+    all.forEach(a => {
+      const row = document.createElement('div'); row.className = 'oa';
+      row.innerHTML = '<button type="button" class="oa-go" title="Show on map"><span class="oa-n"></span><span class="hint">' + fmtMB(a.bytes) + ' · ' + a.springs + ' springs · ' + a.date + '</span></button><button type="button" class="oa-del" title="Delete" aria-label="Delete saved area">✕</button>';
+      row.querySelector('.oa-n').textContent = a.name;
+      row.querySelector('.oa-go').onclick = () => { bmEl.classList.remove('open'); map.fitBounds(a.b); if (!navigator.onLine) setBM('usgstopo', false, true); };
+      row.querySelector('.oa-del').onclick = () => { if (confirm('Delete the offline copy of "' + a.name + '"?')) deleteArea(a.id); };
+      box.appendChild(row);
+    });
+  }
+  renderAreas();
+
+  // With no signal, switch to USGS Topo when the map is over a saved area (without changing the saved choice).
+  let autoSwitched = null;
+  function offlineBasemap() {
+    if (!navigator.onLine && curBM && curBM.id !== 'usgstopo' && inArea(map.getCenter())) { autoSwitched = curBM.id; setBM('usgstopo', false, true); }
+    else if (navigator.onLine && autoSwitched) { setBM(autoSwitched, false, true); autoSwitched = null; }
+  }
+  grid.addEventListener('click', () => { autoSwitched = null; }, true);   // a basemap the user picks wins
+  window.addEventListener('online', offlineBasemap); window.addEventListener('offline', offlineBasemap);
+  map.on('moveend', offlineBasemap); offlineBasemap();
+
   // ---------- App: offline support, install button, offline notice ----------
   if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
     window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
