@@ -48,6 +48,7 @@
   // ---------- Map ----------
   const map = L.map('map', {preferCanvas:true, zoomSnap:0.5, worldCopyJump:true, minZoom:2, maxZoom:19});
   map.fitBounds([[24.5,-125],[49.5,-66.5]]);
+  window.wtMap = map;   // handy for debugging and for staging screenshots from the console
   map.attributionControl.setPrefix('<a href="https://leafletjs.com" target="_blank" rel="noopener">Leaflet</a>');
   const renderer = L.canvas({padding:0.3, tolerance:4});
 
