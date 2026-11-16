@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Hot Springs Map: Wildflower Touring</title>
-<meta name="description" content="Interactive map of 2,072 US thermal springs from NOAA's Thermal Springs List and state geological surveys, with topo, satellite and street basemaps.">
+<meta name="description" content="Interactive map of 3,643 US springs, hot to cool, from NOAA's Thermal Springs List and state geological surveys, with topo, satellite and street basemaps.">
 <link rel="icon" href="assets/favicon-32.png?v=2" sizes="32x32" type="image/png">
 <link rel="apple-touch-icon" href="assets/apple-touch-180.png">
 <link rel="manifest" href="manifest.webmanifest">
@@ -19,7 +19,7 @@
 <body>
 <header>
   <button class="sealbtn" id="aboutbtn" title="About this map" aria-haspopup="dialog"><img class="seal" src="assets/logo-96.png?v=2" srcset="assets/logo-96.png?v=2 1x, assets/logo-192.png?v=2 2x" alt="Wildflower Touring — about this map"></button>
-  <div class="htxt"><h1>Hot Springs Map: Wildflower Touring</h1><div class="sub">2,072 thermal springs across the US · data: NOAA Thermal Springs List (1980) and state geological surveys</div></div>
+  <div class="htxt"><h1>Hot Springs Map: Wildflower Touring</h1><div class="sub">3,643 springs across the US · data: NOAA Thermal Springs List (1980) and state geological surveys</div></div>
   <button class="installbtn" id="installbtn" hidden title="Install as an app">Install app</button>
 </header>
 <div class="app rc" id="app">
@@ -82,14 +82,14 @@
     <div class="panel-h"><button class="fold" id="rfold" aria-expanded="false" aria-controls="list"><span class="chev">▸</span> Results</button><span><span id="count"></span><button class="maxbtn" id="maxbtn" title="Expand the results table">⤢ Expand</button></span></div>
     <div class="thead"><span></span><span>Name</span><span>State</span><span>°F</span><span>°C</span><span>Class</span><span>Land</span><span>USGS quadrangle</span><span class="dcol">Distance</span><span></span><span></span></div>
     <div id="list"></div>
-    <div class="foot">1,661 springs from the <i>Thermal Springs List for the United States</i> (NOAA Key to Geophysical Records Doc. No. 12, 1980), plus 411 springs and newer readings and locations from state geological survey records in the National Geothermal Data System (AASG-GDS, Zaffos and Richard, 2025, <a href="https://doi.org/10.5281/zenodo.8125526" target="_blank" rel="noopener">doi:10.5281/zenodo.8125526</a>, CC BY 4.0). Many springs are on private or closed land; check access before you go. Land ownership is from USGS PAD-US 4.1, checked at each listed location — older coordinates can be off, so confirm on a map before you go. Based on the retired NOAA/NGDC hot springs viewer; source data archived at <a href="https://doi.org/10.25921/c8p0-zs06" target="_blank" rel="noopener">doi:10.25921/c8p0-zs06</a>.</div>
+    <div class="foot">1,661 springs from the <i>Thermal Springs List for the United States</i> (NOAA Key to Geophysical Records Doc. No. 12, 1980), plus 1,982 springs (hot to cool) and newer readings and locations from state geological survey records in the National Geothermal Data System (AASG-GDS, Zaffos and Richard, 2025, <a href="https://doi.org/10.5281/zenodo.8125526" target="_blank" rel="noopener">doi:10.5281/zenodo.8125526</a>, CC BY 4.0). Many springs are on private or closed land; check access before you go. Land ownership is from USGS PAD-US 4.1, checked at each listed location — older coordinates can be off, so confirm on a map before you go. Based on the retired NOAA/NGDC hot springs viewer; source data archived at <a href="https://doi.org/10.25921/c8p0-zs06" target="_blank" rel="noopener">doi:10.25921/c8p0-zs06</a>.</div>
   </aside>
 </div>
 <dialog id="about" aria-labelledby="aboutTitle">
   <button class="ab-close" id="aboutClose" title="Close" aria-label="Close">✕</button>
   <img class="ab-logo" src="assets/logo-512.png" alt="Wildflower Touring — Microadventure Specialists">
   <h2 id="aboutTitle">About the Hot Springs Map</h2>
-  <p>This map was inspired by NOAA's former hot springs viewer, which the National Geophysical Data Center ran until it was retired in 2025. It shows all 1,661 thermal springs in the <i>Thermal Springs List for the United States</i>, compiled by Berry, Grim and Ikelman for NOAA in 1980, plus 411 more from state geological surveys, with newer temperature readings and more precise locations where the surveys have them. Use it to find a warm soak near your next trip, see which springs sit on public land, and jump straight to directions.</p>
+  <p>This map was inspired by NOAA's former hot springs viewer, which the National Geophysical Data Center ran until it was retired in 2025. It shows all 1,661 thermal springs in the <i>Thermal Springs List for the United States</i>, compiled by Berry, Grim and Ikelman for NOAA in 1980, plus 1,982 more springs from state geological surveys, including cooler springs, with newer temperature readings and more precise locations where the surveys have them. Use it to find a warm soak near your next trip, see which springs sit on public land, and jump straight to directions.</p>
   <h3>What you can do</h3>
   <ul>
     <li>Browse springs on topo, satellite, street or shaded-relief maps.</li>
@@ -113,6 +113,6 @@
 </dialog>
 <script src="vendor/leaflet/leaflet.js"></script>
 <script src="config.js?v=13"></script>
-<script src="app.js?v=27"></script>
+<script src="app.js?v=28"></script>
 </body>
 </html>

@@ -1,6 +1,6 @@
 # Wildflower Touring · Hot Springs Map
 
-An interactive map of 2,072 thermal (hot) springs in the United States: the 1,661 springs of NOAA's 1980 list (the data behind NOAA's retired NGDC hot springs viewer) plus 411 more from state geological surveys.
+An interactive map of 3,643 springs in the United States: the 1,661 thermal springs of NOAA's 1980 list (the data behind NOAA's retired NGDC hot springs viewer) plus 1,982 more, hot to cool, from state geological surveys.
 
 ## Features
 
@@ -25,7 +25,7 @@ An interactive map of 2,072 thermal (hot) springs in the United States: the 1,66
 
 `data/springs.json` fields: `name, state, lat, lon, temp_f, temp_c, class, usgs_quad`. Class is `B` (≥ 90 °C), `H` (50–89 °C), `W` (< 50 °C), or the source's own B/H/W label when no temperature was recorded.
 
-Land ownership comes from USGS [PAD-US 4.1](https://www.usgs.gov/programs/gap-analysis-project/science/pad-us-web-services) (the Fee Managers layer), checked at each spring's listed coordinates in November 2026. Each spring's last field, `land`, holds `[category, manager code, unit name]`, or `null` when no PAD-US parcel covers the point, which usually means private land. Category codes: `P` public with open access, `R` public with restricted access, `U` public with unknown access, `M` military, `T` tribal, `N` nonprofit preserve, `V` private. In the app, "On public land" means P, R or U, "On public land & open access" means P only, "On public land without open access" means R or U, and "On private land" means no PAD-US parcel, `V` or `N`. Some 1980 coordinates are off by hundreds of meters, so a spring near a boundary may be classed wrongly.
+Land ownership comes from USGS [PAD-US 4.1](https://www.usgs.gov/programs/gap-analysis-project/science/pad-us-web-services) (the Fee Managers layer), checked at each spring's listed coordinates in November 2026. Each spring's last field, `land`, holds `[category, manager code, unit name]`, or `null` when no PAD-US parcel covers the point, which usually means private land. Temperature classes: Boiling ≥194 °F, Hot 122–193 °F, Warm 68–121 °F, Cool <68 °F. Category codes: `P` public with open access, `R` public with restricted access, `U` public with unknown access, `M` military, `T` tribal, `N` nonprofit preserve, `V` private. In the app, "On public land" means P, R or U, "On public land & open access" means P only, "On public land without open access" means R or U, and "On private land" means no PAD-US parcel, `V` or `N`. Some 1980 coordinates are off by hundreds of meters, so a spring near a boundary may be classed wrongly.
 
 `data/media.json` matches 166 springs to an English Wikipedia article and/or a Wikimedia Commons photo (70 photos), by name and distance, with every match checked by hand (Nov 2026). Photos were reviewed one by one and kept only if they show the spring, pool or thermal feature itself (not signs, buildings, towns, maps or postcards). The text, photographer, license and dates load live from the Wikipedia and Commons APIs when a spring is opened, so credits stay current. Photos whose license isn't free are never shown. Google Maps photos are only taken from places Google classifies as natural features, parks, campgrounds, pools, spas or non-lodging attractions; towns and hotels are skipped. Wikipedia text is CC BY-SA 4.0.
 
@@ -49,6 +49,6 @@ Leaflet 1.9.4 (BSD-2-Clause) is included in `vendor/leaflet`. Map tiles © USGS,
 
 - **Newer readings** for 826 NOAA springs (the newest dated reading, shown next to NOAA's 1980 value; readings that disagree with NOAA by more than 40 °F are dropped as likely mismatches). Where NOAA listed no temperature, the survey reading is used.
 - **More precise locations** for 423 NOAA springs: a name-matched survey record given to 4+ decimal places, 0.1–2 km from NOAA's point. NOAA's original point is kept in the `moved` field.
-- **411 added springs**: survey records not matched to any NOAA spring, at least 20 °C (68 °F) or named hot/warm, more than 0.5 km from any NOAA spring and not sharing a name with one within 5 km; wells, fumaroles, NOAA-derived records and Tennessee's 1956 groundwater survey (mostly cold springs) are excluded, and duplicates within 300 m are merged.
+- **1,982 added springs** of every temperature (1,498 are Cool, under 68 °F; Tennessee's 965 come from a 1956 groundwater survey and are named by county): survey records not matched to any NOAA spring, more than 0.5 km from any NOAA spring and not sharing a name with one within 5 km. Wells, fumaroles, mine features and NOAA-derived records are excluded, and duplicates within 300 m are merged. In eastern states, where springs top out near 40 °C, "Celsius" readings above 45 are converted from Fahrenheit, and any still above 45 °C are treated as unknown.
 
 Land ownership for added and moved springs is looked up in PAD-US at the new point. Each spring's source citation is shown in the app.
