@@ -217,7 +217,7 @@
     activeBadge(); renderList();
   }
   let lastBounds = null, moveTimer = null;
-  map.on('moveend', () => { lastBounds = map.getBounds(); clearTimeout(moveTimer); moveTimer = setTimeout(() => { if ($('inView').checked) update(); }, 60); });
+  map.on('moveend', () => { const sz = map.getSize(); if (!sz.x || !sz.y || !$('mapwrap').offsetWidth) return; lastBounds = map.getBounds(); clearTimeout(moveTimer); moveTimer = setTimeout(() => { if ($('inView').checked) update(); }, 60); });
 
   // ---------- List ----------
   const list = $('list'); let shown = 0;
@@ -432,7 +432,7 @@
     setTimeout(() => map.invalidateSize(), 0);
   }
   rfold.onclick = () => setResults(app.classList.contains('rc'));
-  new ResizeObserver(() => map.invalidateSize()).observe($('mapwrap'));
+  new ResizeObserver(() => { if ($('mapwrap').offsetWidth) map.invalidateSize(); }).observe($('mapwrap'));
   // ---------- App: offline support, install button, offline notice ----------
   if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
     window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
