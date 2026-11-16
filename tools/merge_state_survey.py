@@ -19,7 +19,7 @@ for u in ss['U']:
             r[9] = [f, c, yr, src, 0]
             if r[4] is None:                          # NOAA listed no reading: use the state survey's
                 r[4], r[5] = f, c; r[9][4] = 1
-                if not r[6]: r[6] = cls(f)
+                r[6] = cls(f)                         # class follows the reading now shown
     if len(u) > 5:
         lat, lon, land, lsrc = u[5:9]
         r[10] = [r[2], r[3], lsrc]; r[2], r[3], r[8] = lat, lon, land
