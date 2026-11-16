@@ -54,8 +54,8 @@
 
   let baseLayer = null, curBM = null;
   const labels = L.layerGroup([
-    L.tileLayer(ESRI+'Reference/World_Transportation/MapServer/tile/{z}/{y}/{x}', {maxNativeZoom:19, maxZoom:19}),
-    L.tileLayer(ESRI+'Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {maxNativeZoom:19, maxZoom:19, attribution:ESRI_ATTR})
+    L.tileLayer(ESRI+'Reference/World_Transportation/MapServer/tile/{z}/{y}/{x}', {maxNativeZoom:19, maxZoom:19, crossOrigin:'anonymous'}),
+    L.tileLayer(ESRI+'Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {maxNativeZoom:19, maxZoom:19, crossOrigin:'anonymous', attribution:ESRI_ATTR})
   ]);
   const grid = $('bmgrid');
   BASEMAPS.forEach(b => {
@@ -68,7 +68,7 @@
   function setBM(id, userPicked, keep) {
     const b = BASEMAPS.find(x => x.id === id) || BASEMAPS[0];
     if (baseLayer) map.removeLayer(baseLayer);
-    baseLayer = L.tileLayer(b.url, Object.assign({maxZoom:19, detectRetina:false}, b.url.startsWith(USGS) ? {crossOrigin:'anonymous'} : {}, b.opt)).addTo(map);
+    baseLayer = L.tileLayer(b.url, Object.assign({maxZoom:19, detectRetina:false, crossOrigin:'anonymous'}, b.opt)).addTo(map);
     baseLayer.bringToBack();
     curBM = b;
     grid.querySelectorAll('.sw').forEach(s => s.classList.toggle('on', s.dataset.id === b.id));
@@ -317,7 +317,7 @@
     if (m.photo) {
       const tk = fmtDate(m.photo.taken), up = fmtDate(m.photo.uploaded);
       const when = tk ? 'taken ' + tk : up ? 'uploaded ' + up : '';
-      h += '<figure><a href="' + esc(m.photo.page) + '" target="_blank" rel="noopener"><img src="' + esc(m.photo.src) + '" alt="Photo near ' + esc(title(d.name)) + '" loading="lazy"></a>' +
+      h += '<figure><a href="' + esc(m.photo.page) + '" target="_blank" rel="noopener"><img crossorigin="anonymous" src="' + esc(m.photo.src) + '" alt="Photo near ' + esc(title(d.name)) + '" loading="lazy"></a>' +
         '<figcaption>Photo: ' + esc(m.photo.artist) + ', <a href="' + esc(m.photo.page) + '" target="_blank" rel="noopener">Wikimedia Commons</a> · ' +
         (m.photo.licenseUrl ? '<a href="' + esc(m.photo.licenseUrl) + '" target="_blank" rel="noopener">' + esc(m.photo.license) + '</a>' : esc(m.photo.license)) + (when ? ' · ' + when : '') + '</figcaption></figure>';
     }
@@ -446,7 +446,7 @@
   // ---------- Saved offline areas (USGS Topo tiles + spring details) ----------
   // USGS maps are public domain, so they're the one basemap we download in bulk. Saved copies live in their
   // own cache that is never trimmed; the service worker checks it before the network.
-  const OFF_CACHE = 'offline-v1', OFF_MAX = 5000, OFF_ZMAX = 16, OFF_EST = 25 * 1024;
+  const OFF_CACHE = 'offline-v1', OFF_MAX = 5000, OFF_ZMAX = 16, OFF_EST = 13 * 1024;
   const USGS_TOPO = USGS + 'USGSTopo/MapServer/tile/';
   const offOk = 'caches' in window && 'serviceWorker' in navigator;
   const areasGet = () => { try { return JSON.parse(store.get('wt-offline', '[]')) || []; } catch (e) { return []; } };
@@ -579,7 +579,7 @@
     box.innerHTML = '';
     all.forEach(a => {
       const row = document.createElement('div'); row.className = 'oa';
-      row.innerHTML = '<button type="button" class="oa-go" title="Show on map"><span class="oa-n"></span><span class="hint">' + fmtMB(a.bytes) + ' · ' + a.springs + ' springs · ' + a.date + '</span></button><button type="button" class="oa-del" title="Delete" aria-label="Delete saved area">✕</button>';
+      row.innerHTML = '<button type="button" class="oa-go" title="Show on map"><span class="oa-n"></span><span class="hint">' + fmtMB(a.bytes) + ' · ' + a.springs + (a.springs === 1 ? ' spring · ' : ' springs · ') + a.date + '</span></button><button type="button" class="oa-del" title="Delete" aria-label="Delete saved area">✕</button>';
       row.querySelector('.oa-n').textContent = a.name;
       row.querySelector('.oa-go').onclick = () => { bmEl.classList.remove('open'); map.fitBounds(a.b); if (!navigator.onLine) setBM('usgstopo', false, true); };
       row.querySelector('.oa-del').onclick = () => { if (confirm('Delete the offline copy of "' + a.name + '"?')) deleteArea(a.id); };
