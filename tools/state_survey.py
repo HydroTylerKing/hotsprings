@@ -1,5 +1,5 @@
 """Fetch thermal springs from the National Geothermal Data System (state geological surveys, AASG-GDS,
-CC BY 4.0) and match them to the NOAA 1980 list in data/springs.json.
+CC BY 4.0) and match them to the NOAA 1980 list in data/noaa1980.json.
 
 Writes data/ss_raw.json = {SRC: [citations], U: [updates for NOAA springs], NW: [new springs]}:
   U row:  [noaa_index, temp_f, temp_c, year, src] + optionally [lat, lon, land, loc_src] when a
@@ -69,7 +69,7 @@ for a in raw:
                   copy=bool(re.search(r'NOAA National Geophysical|Berry, George|Berry, G\.W|Thermal Springs List', src, re.I)),
                   well=('well' in ft and 'spring' not in ft), tk=toks(name + ' ' + (a.get('othername') or ''))))
 
-S = json.load(open('data/springs.json'))['springs']
+S = json.load(open('data/noaa1980.json'))['springs']
 N = [dict(i=i, lat=r[2], lon=r[3], tk=toks(r[0])) for i, r in enumerate(S)]
 
 # ---- match each record to the best NOAA spring (name words, small spelling slips allowed; distance-only only when very close)

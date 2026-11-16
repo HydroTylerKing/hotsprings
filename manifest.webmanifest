@@ -1,7 +1,7 @@
 {
   "name": "Wildflower Touring · Hot Springs Map",
   "short_name": "Hot Springs",
-  "description": "Map of 1,661 US thermal springs from NOAA's Thermal Springs List, with land ownership, photos and offline access.",
+  "description": "Map of 2,072 US thermal springs from NOAA's Thermal Springs List and state geological surveys, with land ownership, photos and offline access.",
   "id": "./",
   "start_url": "./",
   "scope": "./",

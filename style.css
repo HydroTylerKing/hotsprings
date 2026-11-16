@@ -214,3 +214,6 @@ aside{width:340px;flex:none;background:#fff;border-left:1px solid var(--line);di
   .app.max #list .st,.thead span:nth-child(3){width:28px}
   .app.max #list .tp,.thead span:nth-child(4){width:46px}
 }
+
+#detail .srcnote{color:var(--muted);font-size:12px}
+#detail .srccite{color:var(--muted);font-size:11.5px;line-height:1.35;margin-top:3px}

@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Hot Springs Map: Wildflower Touring</title>
-<meta name="description" content="Interactive map of 1,661 US thermal springs from NOAA's Thermal Springs List, with topo, satellite and street basemaps.">
+<meta name="description" content="Interactive map of 2,072 US thermal springs from NOAA's Thermal Springs List and state geological surveys, with topo, satellite and street basemaps.">
 <link rel="icon" href="assets/favicon-32.png?v=2" sizes="32x32" type="image/png">
 <link rel="apple-touch-icon" href="assets/apple-touch-180.png">
 <link rel="manifest" href="manifest.webmanifest">
@@ -14,12 +14,12 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="theme-color" content="#f2f0e4">
 <link rel="stylesheet" href="vendor/leaflet/leaflet.css">
-<link rel="stylesheet" href="style.css?v=17">
+<link rel="stylesheet" href="style.css?v=18">
 </head>
 <body>
 <header>
   <button class="sealbtn" id="aboutbtn" title="About this map" aria-haspopup="dialog"><img class="seal" src="assets/logo-96.png?v=2" srcset="assets/logo-96.png?v=2 1x, assets/logo-192.png?v=2 2x" alt="Wildflower Touring — about this map"></button>
-  <div class="htxt"><h1>Hot Springs Map: Wildflower Touring</h1><div class="sub">1,661 thermal springs across the US · data: NOAA Thermal Springs List (Berry, Grim &amp; Ikelman, 1980)</div></div>
+  <div class="htxt"><h1>Hot Springs Map: Wildflower Touring</h1><div class="sub">2,072 thermal springs across the US · data: NOAA Thermal Springs List (1980) and state geological surveys</div></div>
   <button class="installbtn" id="installbtn" hidden title="Install as an app">Install app</button>
 </header>
 <div class="app rc" id="app">
@@ -62,6 +62,12 @@
         <option value="limited">On public land without open access</option>
         <option value="private">On private land</option>
       </select>
+      <select id="src" title="Which list the spring comes from">
+        <option value="">Source: all springs</option>
+        <option value="noaa">NOAA 1980 list only</option>
+        <option value="added">Added from state surveys</option>
+        <option value="ss">With state survey data</option>
+      </select>
       <select id="mine" title="Your saved and visited springs">
         <option value="">All springs</option>
         <option value="saved">My saved springs</option>
@@ -75,14 +81,14 @@
     <div class="panel-h"><button class="fold" id="rfold" aria-expanded="false" aria-controls="list"><span class="chev">▸</span> Results</button><span><span id="count"></span><button class="maxbtn" id="maxbtn" title="Expand the results table">⤢ Expand</button></span></div>
     <div class="thead"><span></span><span>Name</span><span>State</span><span>°F</span><span>°C</span><span>Class</span><span>Land</span><span>USGS quadrangle</span><span class="dcol">Distance</span><span></span><span></span></div>
     <div id="list"></div>
-    <div class="foot">1,661 springs from the <i>Thermal Springs List for the United States</i> (NOAA Key to Geophysical Records Doc. No. 12, 1980). Not updated since 1980 — many are on private or closed land; check access before you go. Land ownership is from USGS PAD-US 4.1, checked at each listed location — 1980 coordinates can be off, so confirm on a map before you go. Based on the retired NOAA/NGDC hot springs viewer; source data archived at <a href="https://doi.org/10.25921/c8p0-zs06" target="_blank" rel="noopener">doi:10.25921/c8p0-zs06</a>.</div>
+    <div class="foot">1,661 springs from the <i>Thermal Springs List for the United States</i> (NOAA Key to Geophysical Records Doc. No. 12, 1980), plus 411 springs and newer readings and locations from state geological survey records in the National Geothermal Data System (AASG-GDS, Zaffos and Richard, 2025, <a href="https://doi.org/10.5281/zenodo.8125526" target="_blank" rel="noopener">doi:10.5281/zenodo.8125526</a>, CC BY 4.0). Many springs are on private or closed land; check access before you go. Land ownership is from USGS PAD-US 4.1, checked at each listed location — older coordinates can be off, so confirm on a map before you go. Based on the retired NOAA/NGDC hot springs viewer; source data archived at <a href="https://doi.org/10.25921/c8p0-zs06" target="_blank" rel="noopener">doi:10.25921/c8p0-zs06</a>.</div>
   </aside>
 </div>
 <dialog id="about" aria-labelledby="aboutTitle">
   <button class="ab-close" id="aboutClose" title="Close" aria-label="Close">✕</button>
   <img class="ab-logo" src="assets/logo-512.png" alt="Wildflower Touring — Microadventure Specialists">
   <h2 id="aboutTitle">About the Hot Springs Map</h2>
-  <p>This map was inspired by NOAA's former hot springs viewer, which the National Geophysical Data Center ran until it was retired in 2025. It shows all 1,661 thermal springs in the <i>Thermal Springs List for the United States</i>, compiled by Berry, Grim and Ikelman for NOAA in 1980. Use it to find a warm soak near your next trip, see which springs sit on public land, and jump straight to directions.</p>
+  <p>This map was inspired by NOAA's former hot springs viewer, which the National Geophysical Data Center ran until it was retired in 2025. It shows all 1,661 thermal springs in the <i>Thermal Springs List for the United States</i>, compiled by Berry, Grim and Ikelman for NOAA in 1980, plus 411 more from state geological surveys, with newer temperature readings and more precise locations where the surveys have them. Use it to find a warm soak near your next trip, see which springs sit on public land, and jump straight to directions.</p>
   <h3>What you can do</h3>
   <ul>
     <li>Browse springs on topo, satellite, street or shaded-relief maps.</li>
@@ -92,6 +98,7 @@
   <h3>Where the information comes from</h3>
   <ul>
     <li><b>Springs:</b> NOAA Key to Geophysical Records Doc. No. 12 (1980), archived at <a href="https://doi.org/10.25921/c8p0-zs06" target="_blank" rel="noopener">doi:10.25921/c8p0-zs06</a>.</li>
+    <li><b>State survey springs, readings and locations:</b> state geological surveys via the National Geothermal Data System, republished as AASG-GDS (Zaffos and Richard, 2025, <a href="https://doi.org/10.5281/zenodo.8125526" target="_blank" rel="noopener">doi:10.5281/zenodo.8125526</a>, CC BY 4.0). Each spring lists its original source.</li>
     <li><b>Land ownership:</b> USGS Protected Areas Database (PAD-US 4.1).</li>
     <li><b>Descriptions &amp; photos:</b> Wikipedia, Wikimedia Commons and Google Maps contributors, credited on each spring.</li>
     <li><b>Maps:</b> USGS, Esri, OpenTopoMap and OpenStreetMap contributors.</li>
@@ -99,12 +106,12 @@
   <h3>Get the app</h3>
   <p id="installHelp">Install this map on your phone for a home-screen icon, full-screen view and offline use. <b>iPhone/iPad:</b> open the site in Safari, tap <b>Share</b>, then <b>Add to Home Screen</b>. <b>Android/Chrome:</b> tap <b>Install app</b> below or in the browser menu.</p>
   <button class="ab-install" id="aboutInstall" hidden>Install app</button>
-  <p class="ab-warn">The list hasn't been updated since 1980 and its locations can be off. Many springs are on private or closed land, so check access and conditions before you go, and leave no trace.</p>
+  <p class="ab-warn">Much of this data is decades old and locations can be off. Many springs are on private or closed land, so check access and conditions before you go, and leave no trace.</p>
   <a class="ab-gh" href="https://github.com/HydroTylerKing/hotsprings" target="_blank" rel="noopener"><svg width="18" height="18" viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg> View the project on GitHub</a>
   <p class="ab-foot">Made by Wildflower Touring · Microadventure Specialists · <a href="privacy.html">Privacy policy</a></p>
 </dialog>
 <script src="vendor/leaflet/leaflet.js"></script>
 <script src="config.js?v=13"></script>
-<script src="app.js?v=23"></script>
+<script src="app.js?v=24"></script>
 </body>
 </html>

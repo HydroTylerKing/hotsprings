@@ -1,6 +1,6 @@
 # Wildflower Touring · Hot Springs Map
 
-An interactive map of 1,661 thermal (hot) springs in the United States, rebuilt from NOAA's retired NGDC hot springs viewer.
+An interactive map of 2,072 thermal (hot) springs in the United States: the 1,661 springs of NOAA's 1980 list (the data behind NOAA's retired NGDC hot springs viewer) plus 411 more from state geological surveys.
 
 ## Features
 
@@ -42,3 +42,13 @@ This is a static site with no build step. To publish it with GitHub Pages, go to
 To run it locally: `python3 -m http.server`, then open http://localhost:8000.
 
 Leaflet 1.9.4 (BSD-2-Clause) is included in `vendor/leaflet`. Map tiles © USGS, Esri, OpenTopoMap and OpenStreetMap contributors, as credited on the map.
+
+## State geological survey data
+
+`tools/state_survey.py` (run by `.github/workflows/state-survey.yml` on GitHub Actions, on changes and quarterly) pulls the 4,701 thermal-spring records that state geological surveys contributed to the National Geothermal Data System, republished as AASG-GDS (Zaffos and Richard, 2025, [doi:10.5281/zenodo.8125526](https://doi.org/10.5281/zenodo.8125526), CC BY 4.0), and matches them to the NOAA list by distinctive name words and distance. `tools/merge_state_survey.py` then builds `data/springs.json` from the untouched NOAA file `data/noaa1980.json` and the results in `data/ss_raw.json`:
+
+- **Newer readings** for 826 NOAA springs (the newest dated reading, shown next to NOAA's 1980 value; readings that disagree with NOAA by more than 40 °F are dropped as likely mismatches). Where NOAA listed no temperature, the survey reading is used.
+- **More precise locations** for 423 NOAA springs: a name-matched survey record given to 4+ decimal places, 0.1–2 km from NOAA's point. NOAA's original point is kept in the `moved` field.
+- **411 added springs**: survey records not matched to any NOAA spring, at least 20 °C (68 °F) or named hot/warm, more than 0.5 km from any NOAA spring and not sharing a name with one within 5 km; wells, fumaroles, NOAA-derived records and Tennessee's 1956 groundwater survey (mostly cold springs) are excluded, and duplicates within 300 m are merged.
+
+Land ownership for added and moved springs is looked up in PAD-US at the new point. Each spring's source citation is shown in the app.
