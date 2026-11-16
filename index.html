@@ -46,7 +46,7 @@
   </div>
   <aside>
     <div class="panel-h"><button class="fold" id="fold" aria-expanded="false" aria-controls="controls"><span class="chev">▸</span> Filter Results <span class="active" id="active"></span></button><span class="units" id="units"><button data-u="F" class="on">°F</button><button data-u="C">°C</button></span></div>
-    <div class="controls" id="controls" hidden>
+    <form class="controls" id="controls" hidden autocomplete="off" onsubmit="return false">
       <input type="search" id="q" placeholder="Search by name (e.g. Burgdorf, Chena)…" autocomplete="off">
       <div class="row">
         <select id="state"><option value="">All states</option></select>
@@ -66,8 +66,8 @@
         <option value="notvisited">Not visited yet</option>
       </select>
       <label class="inview"><input type="checkbox" id="inView" checked> Only list springs in the current map view</label>
-      <div class="range">Min temp <input type="range" id="minT" min="60" max="310" step="1" value="60"><span id="minTv"></span></div>
-    </div>
+      <div class="range">Min temp <input type="range" id="minT" min="60" max="310" step="1" value="60" autocomplete="off"><span id="minTv"></span></div>
+    </form>
     <div id="detail"></div>
     <div class="panel-h"><button class="fold" id="rfold" aria-expanded="false" aria-controls="list"><span class="chev">▸</span> Results</button><span><span id="count"></span><button class="maxbtn" id="maxbtn" title="Expand the results table">⤢ Expand</button></span></div>
     <div class="thead"><span></span><span>Name</span><span>State</span><span>°F</span><span>°C</span><span>Class</span><span>Land</span><span>USGS quadrangle</span><span class="dcol">Distance</span><span></span><span></span></div>
@@ -102,6 +102,6 @@
 </dialog>
 <script src="vendor/leaflet/leaflet.js"></script>
 <script src="config.js?v=13"></script>
-<script src="app.js?v=17"></script>
+<script src="app.js?v=18"></script>
 </body>
 </html>

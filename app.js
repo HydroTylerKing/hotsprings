@@ -269,8 +269,15 @@
     if (MEDIA[d.i]) loadAbout(d);
     loadGooglePhoto(d);
     det.querySelector('.x').onclick = () => { sel = null; det.style.display = 'none'; map.closePopup(); restyle(); list.querySelectorAll('.it.sel').forEach(e => e.classList.remove('sel')); setHash(''); };
-    const open = () => L.popup({offset:[0,-4], autoPan:!fly, closeButton:true}).setLatLng([d.lat, d.lon]).setContent(popupHtml(d)).openOn(map);
-    if (fly) { map.once('moveend', open); map.flyTo([d.lat, d.lon], Math.max(map.getZoom(), 11), {duration:.8}); } else open();
+    // On wider screens the panel floats over the left of the map: keep the spring and its popup clear of it.
+    const panelW = () => { const a = document.querySelector('aside'); return (window.innerWidth > 760 && !app.classList.contains('max') && a) ? a.getBoundingClientRect().right - $('mapwrap').getBoundingClientRect().left : 0; };
+    const pw = panelW();
+    const open = () => L.popup({offset:[0,-4], autoPan:true, autoPanPaddingTopLeft:[pw + 16, 16], closeButton:true}).setLatLng([d.lat, d.lon]).setContent(popupHtml(d)).openOn(map);
+    if (fly) {
+      const z = Math.max(map.getZoom(), 11);
+      const target = pw ? map.unproject(map.project([d.lat, d.lon], z).subtract([pw / 2, 0]), z) : L.latLng(d.lat, d.lon);
+      map.once('moveend', open); map.flyTo(target, z, {duration:.8});
+    } else open();
     setHash('spring-' + d.i);
   }
   map.on('popupclose', () => {});
