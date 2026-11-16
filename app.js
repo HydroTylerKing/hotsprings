@@ -313,7 +313,8 @@
     const box = $('about'); if (!box || sel !== d) return;
     let h = '';
     if (m.photo) {
-      const when = m.photo.taken ? 'taken ' + fmtDate(m.photo.taken) : m.photo.uploaded ? 'uploaded ' + fmtDate(m.photo.uploaded) : '';
+      const tk = fmtDate(m.photo.taken), up = fmtDate(m.photo.uploaded);
+      const when = tk ? 'taken ' + tk : up ? 'uploaded ' + up : '';
       h += '<figure><a href="' + esc(m.photo.page) + '" target="_blank" rel="noopener"><img src="' + esc(m.photo.src) + '" alt="Photo near ' + esc(title(d.name)) + '" loading="lazy"></a>' +
         '<figcaption>Photo: ' + esc(m.photo.artist) + ', <a href="' + esc(m.photo.page) + '" target="_blank" rel="noopener">Wikimedia Commons</a> · ' +
         (m.photo.licenseUrl ? '<a href="' + esc(m.photo.licenseUrl) + '" target="_blank" rel="noopener">' + esc(m.photo.license) + '</a>' : esc(m.photo.license)) + (when ? ' · ' + when : '') + '</figcaption></figure>';
