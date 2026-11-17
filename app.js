@@ -151,7 +151,7 @@
   // Wikipedia article / Commons photo matched to each spring (data/media.json); text and credits load live
   let MEDIA = {};
   const mediaReady = fetch('data/media.json?v=2').then(r => r.ok ? r.json() : {m:{}}).then(j => { MEDIA = j.m || {}; }).catch(() => {});
-  Promise.all([fetch('data/springs.json?v=5').then(r => r.json()), mediaReady]).then(([j]) => init(j)).catch(err => {
+  Promise.all([fetch('data/springs.json?v=6').then(r => r.json()), mediaReady]).then(([j]) => init(j)).catch(err => {
     alertMsg('Could not load spring data (' + err + ').');
   });
 
@@ -159,7 +159,7 @@
   function init(json) {
     S = json.springs.map((r, i) => ({i, name:r[0] || 'Unnamed spring', unnamed:!r[0], st:r[1], lat:r[2], lon:r[3], f:r[4], c:r[5], cls:r[6], quad:(r[7] || '').replace(/^\(|\)$/g, ''), land:r[8] || null, ss:r[9] || null, moved:r[10] || null, added:r[11] === 'S'}));
     SS_SRC = json.ss_sources || [];
-    const sub = document.querySelector('header .sub'); if (sub) sub.textContent = S.length.toLocaleString() + ' springs across the US · data: NOAA Thermal Springs List (1980) and state geological surveys';
+    const sub = document.querySelector('header .sub'); if (sub) sub.textContent = S.length.toLocaleString() + ' springs across the US · data: NOAA Thermal Springs List (1980), state geological surveys and USGS';
     S.forEach(d => { d.noaaNoTemp = !d.added && !!d.ss && d.ss[4] === 1; });   // NOAA listed no reading, so the state survey's is shown
     // markers (hotter drawn on top)
     S.slice().sort((a, b) => ORDER[a.cls] - ORDER[b.cls]).forEach(d => {
@@ -264,15 +264,15 @@
     det.innerHTML = '<button class="x" title="Close">✕</button><h2>' + esc(title(d.name)) + '</h2>' +
       '<div class="mybtns"><button class="mybtn sav' + (saved.has(d.i) ? ' on' : '') + '">' + (saved.has(d.i) ? '★ Saved' : '☆ Save') + '</button><button class="mybtn vis' + (visited.has(d.i) ? ' on' : '') + '">' + (visited.has(d.i) ? '✓ Visited' : 'Mark visited') + '</button></div><table>' +
       '<tr><td>State</td><td>' + NAMES[d.st] + '</td></tr>' +
-      '<tr><td>Temperature</td><td>' + tempLong(d) + (d.ss && (d.added || d.noaaNoTemp) ? ' <span class="srcnote">(state survey' + (d.ss[2] ? ', ' + d.ss[2] : '') + ')</span>' : d.f != null && !d.added ? ' <span class="srcnote">(NOAA 1980)</span>' : '') + '</td></tr>' +
-      (d.ss && !d.added && !d.noaaNoTemp ? '<tr><td>State survey reading</td><td>' + (unit === 'F' ? d.ss[0] + '°F' : d.ss[1] + '°C') + (d.ss[2] ? ', measured ' + d.ss[2] : ', date not recorded') + '</td></tr>' : '') +
+      '<tr><td>Temperature</td><td>' + tempLong(d) + (d.ss && (d.added || d.noaaNoTemp) ? ' <span class="srcnote">(' + (d.ss[2] ? 'measured ' + d.ss[2] : 'date not recorded') + ')</span>' : d.f != null && !d.added ? ' <span class="srcnote">(NOAA 1980)</span>' : '') + '</td></tr>' +
+      (d.ss && !d.added && !d.noaaNoTemp ? '<tr><td>Newer reading</td><td>' + (unit === 'F' ? d.ss[0] + '°F' : d.ss[1] + '°C') + (d.ss[2] ? ', measured ' + d.ss[2] : ', date not recorded') + '</td></tr>' : '') +
       '<tr><td>Class</td><td><span class="dot" style="background:' + COLORS[d.cls] + ';vertical-align:-1px"></span> ' + LABEL[d.cls] + '</td></tr>' +
       '<tr><td>Latitude, longitude</td><td>' + lat + ', ' + lon + '</td></tr>' +
       '<tr><td>Land</td><td>' + (d.land ? esc(d.land[2]) + (MGR[d.land[1]] && !d.land[2].includes(MGR[d.land[1]]) ? ' <span style="color:var(--muted)">(' + MGR[d.land[1]] + ')</span>' : '') + '<br><span class="landtag ' + LANDCAT[d.land[0]][1] + '" style="margin-left:0">' + LANDCAT[d.land[0]][0] + '</span>' : '<span class="landtag no" style="margin-left:0">Private or unmapped</span>') + '</td></tr>' +
       (d.moved ? '<tr><td>Location</td><td>From state survey records; NOAA\'s 1980 point is ' + fmtDist(kmBetween(d.lat, d.lon, d.moved[0], d.moved[1])) + ' away</td></tr>' : '') +
       (d.quad ? '<tr><td>USGS quadrangle</td><td>' + esc(d.quad) + '</td></tr>' : '') +
-      '<tr><td>Listed in</td><td>' + (d.added ? 'State geological survey records (not in NOAA\'s 1980 list)' : 'NOAA Thermal Springs List (1980)') +
-        (d.ss || d.moved ? '<div class="srccite">' + (d.ss ? 'Reading: ' + esc(SS_SRC[d.ss[3]] || '') : '') + (d.moved && (!d.ss || d.moved[2] !== d.ss[3]) ? (d.ss ? '<br>' : '') + 'Location: ' + esc(SS_SRC[d.moved[2]] || '') : '') + ' · via the <a href="https://doi.org/10.5281/zenodo.8125526" target="_blank" rel="noopener">National Geothermal Data System</a> (CC BY 4.0)</div>' : '') + '</td></tr>' +
+      '<tr><td>Listed in</td><td>' + (d.added ? 'Added from other data sources (not in NOAA\'s 1980 list)' : 'NOAA Thermal Springs List (1980)') +
+        (d.ss || d.moved ? '<div class="srccite">' + (d.ss ? 'Reading: ' + esc(SS_SRC[d.ss[3]] || '') : '') + (d.moved && (!d.ss || d.moved[2] !== d.ss[3]) ? (d.ss ? '<br>' : '') + 'Location: ' + esc(SS_SRC[d.moved[2]] || '') : '') + (/^(Water Quality Portal|Nevada Bureau|New Mexico Bureau)/.test(SS_SRC[(d.ss || d.moved)[d.ss ? 3 : 2]] || '') ? '' : ' · via the <a href="https://doi.org/10.5281/zenodo.8125526" target="_blank" rel="noopener">National Geothermal Data System</a> (CC BY 4.0)') + '</div>' : '') + '</td></tr>' +
       (dist != null ? '<tr><td>Distance from you</td><td>' + Math.round(dist).toLocaleString() + ' mi (straight line)</td></tr>' : '') +
       '</table><div class="gphoto" id="gphoto" hidden></div>' + (MEDIA[d.i] ? '<div class="about" id="about"><div class="ab-load">Loading description…</div></div>' : '') + '<a class="gbtn" target="_blank" rel="noopener" href="' + gmaps(d) + '">' + PIN + ' Open in Google Maps</a>';
     det.querySelector('.mybtn.sav').onclick = e => { saved.has(d.i) ? saved.delete(d.i) : saved.add(d.i); saveSet('wt-saved', saved); e.currentTarget.classList.toggle('on', saved.has(d.i)); e.currentTarget.textContent = saved.has(d.i) ? '★ Saved' : '☆ Save'; restyle(); renderList(); };
@@ -463,6 +463,46 @@
   }
   rfold.onclick = () => setResults(app.classList.contains('rc'));
   new ResizeObserver(() => { if ($('mapwrap').offsetWidth) map.invalidateSize(); }).observe($('mapwrap'));
+  // ---------- Named springs layer (USGS place names; loaded only when switched on) ----------
+  // ~35,000 springs, mostly cool and without readings. Drawn only from zoom 8 and up, at most 4,000 at a time.
+  const NAMED_MIN_Z = 8, NAMED_MAX = 4000;
+  const namedLayer = L.layerGroup();
+  let NAMED = null, namedLoading = null;
+  const namedChk = $('namedChk'), namedHint = $('namedHint');
+  function namedPopup(r) {
+    const d = {lat:r[2], lon:r[3]};
+    const t = r[4] == null ? 'No reading' : (unit === 'F' ? r[4] + '°F' : Math.round((r[4] - 32) * 5 / 9) + '°C') + (r[5] ? ' (' + r[5] + ')' : '');
+    return '<div class="pop"><a target="_blank" rel="noopener" title="Open in Google Maps" href="' + gmaps(d) + '">' + PIN + esc(r[0]) + '</a>' +
+      '<div class="t">Temperature: <b>' + t + '</b></div><div class="t nm-src">Named spring' + (r[1] ? ', ' + (NAMES[r[1]] || r[1]) : '') + ' · USGS place names' + (r[4] != null ? '; reading from the Water Quality Portal' : '') + '</div></div>';
+  }
+  function drawNamed() {
+    namedLayer.clearLayers();
+    if (!namedChk.checked || !NAMED) { namedHint.textContent = ''; return; }
+    if (map.getZoom() < NAMED_MIN_Z) { namedHint.textContent = 'Zoom in to see them'; return; }
+    const b = map.getBounds().pad(0.1); let n = 0;
+    for (const r of NAMED) {
+      if (!b.contains([r[2], r[3]])) continue;
+      if (++n > NAMED_MAX) break;
+      const warm = r[4] != null && r[4] >= 68;
+      L.circleMarker([r[2], r[3]], {renderer, radius:3.5, weight:1, color:'#2f5674', opacity:.8, fillColor: warm ? COLORS[r[4] >= 122 ? 'H' : 'W'] : '#a9c6de', fillOpacity:.9})
+        .bindPopup(() => namedPopup(r)).addTo(namedLayer);
+    }
+    namedHint.textContent = n > NAMED_MAX ? 'Zoom in to see all' : '';
+  }
+  async function setNamed(on) {
+    if (on) {
+      if (!namedLayer._map) namedLayer.addTo(map);
+      if (!NAMED) {
+        namedHint.textContent = 'Loading…';
+        try { NAMED = (await (namedLoading = namedLoading || fetch('data/named_springs.json?v=1').then(r => r.json()))).springs; }
+        catch (e) { namedHint.textContent = 'Couldn\'t load (offline?)'; namedChk.checked = false; namedLoading = null; return; }
+      }
+      drawNamed();
+    } else { namedLayer.clearLayers(); map.removeLayer(namedLayer); namedHint.textContent = ''; }
+  }
+  namedChk.addEventListener('change', () => setNamed(namedChk.checked));
+  map.on('moveend', () => { if (namedChk.checked) drawNamed(); });
+
   // ---------- Saved offline areas (USGS Topo tiles + spring details) ----------
   // USGS maps are public domain, so they're the one basemap we download in bulk. Saved copies live in their
   // own cache that is never trimmed; the service worker checks it before the network.

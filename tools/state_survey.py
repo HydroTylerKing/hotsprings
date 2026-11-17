@@ -196,12 +196,15 @@ with ThreadPoolExecutor(4) as ex:
 STREAM = re.compile(r'\b(abv|above|below|blw|bl|upstream|downstream|u/s|d/s|confluence|bridge|mouth|run|rn|creek at|cr at|nr mouth|outlet|outflow|ditch|canal|pipe|tap|well)\b', re.I)
 def clean_wqp(nm):
     nm = (nm or '').strip()
-    nm = re.sub(r'^\d{3}[A-Z]?\s+[NS]\d+\s+[EW]\d+\s+\S+\s+\d+\s+', '', nm)          # Nevada township/range prefix: "054 N31 E48 08D 1 "
+    nm = re.sub(r'^\d{3}[A-Z]?\s+[NS]\d+\s+[EW]\d+\s+\S+\s+(\d+\s+)?', '', nm)    # Nevada township/range prefix: "054 N31 E48 08D 1 "
     nm = re.sub(r'^\(?[A-Z]-?\d+-\d+\)?\S*\s+', '', nm)                                  # Utah/Idaho cadastral prefix
     nm = re.sub(r'\b(Th\.?\s+)?Sp(r|g|gs)?\.?(?=\s|$)', lambda m: ('Thermal ' if m.group(1) else '') + ('Springs' if (m.group(2) or '') == 'gs' else 'Spring'), nm, flags=re.I)
     nm = re.sub(r'\s+\d+(SE|SW|NE|NW|[NSEW])$', '', nm)                                     # trailing "4SE" direction-from-town notes
     nm = re.split(r'\s+[-–]\s+', nm)[0]                                                    # drop "- main pool at boil" style notes
     if not [w for w in re.findall(r'[A-Za-z]{3,}', nm) if not re.fullmatch(r'[a-dA-D]+', w)]: return 'Unnamed spring'   # only codes left
+    if re.fullmatch(r'(?i)un\s*named( spring)?', nm): return 'Unnamed spring'
+    if re.fullmatch(r'[A-Za-z]*\d[\w-]*', nm): return 'Unnamed spring'                             # a single sampling code, e.g. HOR010C1, LIR-10
+    if re.search(r'\d', nm) and not re.search(r'(?i)\b(springs?|seep|vent|hot|warm|ojo|agua|boil|geyser|pool|tub|bath)', nm): return 'Unnamed spring'
     return nm
 skipped_stream = 0
 for s in WQP_SITES:

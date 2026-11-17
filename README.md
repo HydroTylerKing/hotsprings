@@ -1,6 +1,6 @@
 # Wildflower Touring · Hot Springs Map
 
-An interactive map of 3,643 springs in the United States: the 1,661 thermal springs of NOAA's 1980 list (the data behind NOAA's retired NGDC hot springs viewer) plus 1,982 more, hot to cool, from state geological surveys.
+An interactive map of US springs: the 1,661 thermal springs of NOAA's 1980 list (the data behind NOAA's retired NGDC hot springs viewer), thousands more from state geological surveys, the Nevada and New Mexico geological surveys and the Water Quality Portal, and an optional layer of about 33,000 named springs from USGS place names.
 
 ## Features
 
@@ -43,7 +43,7 @@ To run it locally: `python3 -m http.server`, then open http://localhost:8000.
 
 Leaflet 1.9.4 (BSD-2-Clause) is included in `vendor/leaflet`. Map tiles © USGS, Esri, OpenTopoMap and OpenStreetMap contributors, as credited on the map.
 
-## State geological survey data
+## Added data sources
 
 `tools/state_survey.py` (run by `.github/workflows/state-survey.yml` on GitHub Actions, on changes and quarterly) pulls the 4,701 thermal-spring records that state geological surveys contributed to the National Geothermal Data System, republished as AASG-GDS (Zaffos and Richard, 2025, [doi:10.5281/zenodo.8125526](https://doi.org/10.5281/zenodo.8125526), CC BY 4.0), and matches them to the NOAA list by distinctive name words and distance. `tools/merge_state_survey.py` then builds `data/springs.json` from the untouched NOAA file `data/noaa1980.json` and the results in `data/ss_raw.json`:
 
@@ -52,3 +52,17 @@ Leaflet 1.9.4 (BSD-2-Clause) is included in `vendor/leaflet`. Map tiles © USGS,
 - **1,982 added springs** of every temperature (1,498 are Cool, under 68 °F; Tennessee's 965 come from a 1956 groundwater survey and are named by county): survey records not matched to any NOAA spring, more than 0.5 km from any NOAA spring and not sharing a name with one within 5 km. Wells, fumaroles, mine features and NOAA-derived records are excluded, and duplicates within 300 m are merged. In eastern states, where springs top out near 40 °C, "Celsius" readings above 45 are converted from Fahrenheit, and any still above 45 °C are treated as unknown.
 
 Land ownership for added and moved springs is looked up in PAD-US at the new point. Each spring's source citation is shown in the app.
+
+### More sources (same pipeline)
+
+`tools/state_survey.py` also pulls, and matches the same way:
+
+- **Nevada Bureau of Mines and Geology** geothermal database, *Hot Springs and Wells* layer (spring records only; newest sample per site, with its reference).
+- **New Mexico Bureau of Geology and Mineral Resources**, springs discharging above 30 °C (Kelley, 2015, [doi:10.15121/1223849](https://doi.org/10.15121/1223849), CC BY 4.0). Points are given only as UTM coordinates and IDs.
+- **Water Quality Portal** (USGS, EPA, National Park Service and others): every site typed *Spring* with a water-temperature result, state by state; the newest reading per site. Readings attach to matched springs (newest dated reading wins); unmatched sites are added only at 20 °C (68 °F) or warmer, since most are cold monitoring points. Site names are cleaned (survey-code prefixes removed, "Sp"/"Spr" expanded), and stream, ditch and well sampling points are skipped.
+
+Marker locations are only ever moved using state geological survey records.
+
+### Named springs layer
+
+`tools/named_springs.py` builds `data/named_springs.json` from the USGS Geographic Names Information System (feature class *Spring*, public domain): every named spring not already among the main springs (within 150 m, or 600 m with a shared name word). A Water Quality Portal temperature is attached when a spring site with a matching name lies within 1 km, or any site within 200 m. The app loads this file only when **Named springs** is ticked in the legend, and draws it from zoom 8 in (up to 4,000 points at a time). These springs are not in the list, filters or offline saves.
