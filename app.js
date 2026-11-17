@@ -445,8 +445,7 @@
 
   // ---------- Controls ----------
   function legendText() {
-    document.querySelectorAll('#rticks span').forEach(el => { const f = +el.dataset.f; el.textContent = unit === 'F' ? f + '°' : Math.round((f - 32) * 5 / 9) + '°'; });
-    $('runit').textContent = unit === 'F' ? '°F' : '°C';
+    document.querySelectorAll('#rticks span').forEach((el, k) => { const f = +el.dataset.f; el.textContent = (unit === 'F' ? f : Math.round((f - 32) * 5 / 9)) + (k ? '°' : unit === 'F' ? '°F' : '°C'); });
   }
   function minLabel() { const v = minF(); $('minTv').textContent = v <= 40 ? 'any' : (unit === 'F' ? v + '°F' : Math.round((v - 32) * 5 / 9) + '°C'); }
   function setUnit(u) {
