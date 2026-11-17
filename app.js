@@ -151,14 +151,18 @@
   // Wikipedia article / Commons photo matched to each spring (data/media.json); text and credits load live
   let MEDIA = {};
   const mediaReady = fetch('data/media.json?v=2').then(r => r.ok ? r.json() : {m:{}}).then(j => { MEDIA = j.m || {}; }).catch(() => {});
-  Promise.all([fetch('data/springs.json?v=7').then(r => r.json()), mediaReady]).then(([j]) => init(j)).catch(err => {
+  const recReady = fetch('data/recreation.json?v=1').then(r => r.ok ? r.json() : {}).then(j => { REC = j.r || {}; }).catch(() => {});
+  Promise.all([fetch('data/springs.json?v=7').then(r => r.json()), mediaReady, recReady]).then(([j]) => init(j)).catch(err => {
     alertMsg('Could not load spring data (' + err + ').');
   });
 
-  let SS_SRC = [];
+  let SS_SRC = [], REC = {};
+  const REC_LABEL = {D:'Developed soaking', W:'Popular wild soak', P:'Possibly used', N:'Unlikely or not allowed', U:'No evidence found'};
+  const recKey = d => d.lat.toFixed(3) + ',' + d.lon.toFixed(3);
   function init(json) {
     S = json.springs.map((r, i) => ({i, name:r[0] || 'Unnamed spring', unnamed:!r[0], st:r[1], lat:r[2], lon:r[3], f:r[4], c:r[5], cls:r[6], quad:(r[7] || '').replace(/^\(|\)$/g, ''), land:r[8] || null, ss:r[9] || null, moved:r[10] || null, added:r[11] === 'S'}));
     SS_SRC = json.ss_sources || [];
+    S.forEach(d => { d.rec = REC[recKey(d)] || null; });
     const sub = document.querySelector('header .sub'); if (sub) sub.textContent = S.length.toLocaleString() + ' springs across the US · data: NOAA Thermal Springs List (1980), state geological surveys and USGS';
     S.forEach(d => { d.noaaNoTemp = !d.added && !!d.ss && d.ss[4] === 1; });   // NOAA listed no reading, so the state survey's is shown
     // markers (hotter drawn on top)
@@ -186,10 +190,12 @@
   map.on('baselayerchange', restyle);
 
   // ---------- Filtering ----------
-  const q = $('q'), stSel = $('state'), sortSel = $('sort'), minT = $('minT'), landSel = $('land'), mineSel = $('mine'), srcSel = $('src');
+  const q = $('q'), stSel = $('state'), sortSel = $('sort'), minT = $('minT'), landSel = $('land'), mineSel = $('mine'), srcSel = $('src'), soakSel = $('soak');
   const minF = () => +minT.value;
   function passes(d) {
     const term = q.value.trim().toLowerCase(), st = stSel.value, m = minF(), lf = landSel.value, mf = mineSel.value;
+    const kf = soakSel.value;
+    if (kf && !(kf === 'DW' ? (d.rec && (d.rec[0] === 'D' || d.rec[0] === 'W')) : d.rec && d.rec[0] === kf)) return false;
     const sf = srcSel.value;
     if (sf && (sf === 'noaa' ? d.added : sf === 'added' ? !d.added : !(d.ss || d.added))) return false;
     if (mf && !(mf === 'saved' ? saved.has(d.i) : mf === 'visited' ? visited.has(d.i) : !visited.has(d.i))) return false;
@@ -271,6 +277,7 @@
       '<tr><td>Land</td><td>' + (d.land ? esc(d.land[2]) + (MGR[d.land[1]] && !d.land[2].includes(MGR[d.land[1]]) ? ' <span style="color:var(--muted)">(' + MGR[d.land[1]] + ')</span>' : '') + '<br><span class="landtag ' + LANDCAT[d.land[0]][1] + '" style="margin-left:0">' + LANDCAT[d.land[0]][0] + '</span>' : '<span class="landtag no" style="margin-left:0">Private or unmapped</span>') + '</td></tr>' +
       (d.moved ? '<tr><td>Location</td><td>From state survey records; NOAA\'s 1980 point is ' + fmtDist(kmBetween(d.lat, d.lon, d.moved[0], d.moved[1])) + ' away</td></tr>' : '') +
       (d.quad ? '<tr><td>USGS quadrangle</td><td>' + esc(d.quad) + '</td></tr>' : '') +
+      (d.rec ? '<tr><td>Soaking <span class="srcnote">(estimate)</span></td><td><span class="soak soak-' + d.rec[0] + '">' + REC_LABEL[d.rec[0]] + '</span>' + (d.rec[1] ? '<div class="srccite">' + esc(d.rec[1]) + '</div>' : '') + '</td></tr>' : '') +
       '<tr><td>Listed in</td><td>' + (d.added ? 'Added from other data sources (not in NOAA\'s 1980 list)' : 'NOAA Thermal Springs List (1980)') +
         (d.ss || d.moved ? '<div class="srccite">' + (d.ss ? 'Reading: ' + esc(SS_SRC[d.ss[3]] || '') : '') + (d.moved && (!d.ss || d.moved[2] !== d.ss[3]) ? (d.ss ? '<br>' : '') + 'Location: ' + esc(SS_SRC[d.moved[2]] || '') : '') + (/^(Water Quality Portal|Nevada Bureau|New Mexico Bureau)/.test(SS_SRC[(d.ss || d.moved)[d.ss ? 3 : 2]] || '') ? '' : ' · via the <a href="https://doi.org/10.5281/zenodo.8125526" target="_blank" rel="noopener">National Geothermal Data System</a> (CC BY 4.0)') + '</div>' : '') + '</td></tr>' +
       (dist != null ? '<tr><td>Distance from you</td><td>' + Math.round(dist).toLocaleString() + ' mi (straight line)</td></tr>' : '') +
@@ -420,7 +427,7 @@
   }
   $('units').addEventListener('click', e => { const b = e.target.closest('button'); if (b) setUnit(b.dataset.u); });
   function activeBadge() {
-    let n = 0; if (srcSel.value) n++; if (landSel.value) n++; if (mineSel.value) n++; if (q.value.trim()) n++; if (stSel.value) n++; if (minF() > 40) n++; if (sortSel.value !== 'name') n++; if (!$('inView').checked) n++;
+    let n = 0; if (soakSel.value) n++; if (srcSel.value) n++; if (landSel.value) n++; if (mineSel.value) n++; if (q.value.trim()) n++; if (stSel.value) n++; if (minF() > 40) n++; if (sortSel.value !== 'name') n++; if (!$('inView').checked) n++;
     const a = $('active'); a.textContent = n + (n === 1 ? ' filter' : ' filters'); a.style.display = n ? 'inline' : 'none';
   }
   const fold = $('fold'), ctr = $('controls');
@@ -429,6 +436,7 @@
   landSel.addEventListener('change', update);
   mineSel.addEventListener('change', update);
   srcSel.addEventListener('change', update);
+  soakSel.addEventListener('change', update);
   $('inView').addEventListener('change', update);
   sortSel.addEventListener('change', () => { if (sortSel.value === 'near' && !me) locate(false); update(); });
   minT.addEventListener('input', () => { minLabel(); update(); });

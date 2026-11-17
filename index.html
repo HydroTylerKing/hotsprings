@@ -14,7 +14,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="theme-color" content="#f2f0e4">
 <link rel="stylesheet" href="vendor/leaflet/leaflet.css">
-<link rel="stylesheet" href="style.css?v=19">
+<link rel="stylesheet" href="style.css?v=20">
 </head>
 <body>
 <header>
@@ -63,6 +63,14 @@
         <option value="open">On public land &amp; open access</option>
         <option value="limited">On public land without open access</option>
         <option value="private">On private land</option>
+      </select>
+      <select id="soak" title="Whether people soak there (an estimate for springs 90°F and warmer)">
+        <option value="">Soaking: any</option>
+        <option value="DW">Known soaking spots</option>
+        <option value="D">Developed (resort, pool, bathhouse)</option>
+        <option value="W">Popular wild soaks</option>
+        <option value="P">Possibly used</option>
+        <option value="N">Unlikely or not allowed</option>
       </select>
       <select id="src" title="Which list the spring comes from">
         <option value="">Source: all springs</option>
@@ -118,6 +126,6 @@
 </dialog>
 <script src="vendor/leaflet/leaflet.js"></script>
 <script src="config.js?v=13"></script>
-<script src="app.js?v=33"></script>
+<script src="app.js?v=34"></script>
 </body>
 </html>
