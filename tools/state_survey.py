@@ -193,10 +193,22 @@ def wqp_state(code):
     return out
 with ThreadPoolExecutor(4) as ex:
     for lst in ex.map(wqp_state, sorted(FIPS)): WQP_SITES += lst
+STREAM = re.compile(r'\b(abv|above|below|blw|bl|upstream|downstream|u/s|d/s|confluence|bridge|mouth|run|rn|creek at|cr at|nr mouth|outlet|outflow|ditch|canal|pipe|tap|well)\b', re.I)
+def clean_wqp(nm):
+    nm = (nm or '').strip()
+    nm = re.sub(r'^\d{3}[A-Z]?\s+[NS]\d+\s+[EW]\d+\s+\S+\s+\d+\s+', '', nm)          # Nevada township/range prefix: "054 N31 E48 08D 1 "
+    nm = re.sub(r'^\(?[A-Z]-?\d+-\d+\)?\S*\s+', '', nm)                                  # Utah/Idaho cadastral prefix
+    nm = re.sub(r'\b(Th\.?\s+)?Sp(r|g|gs)?\.?(?=\s|$)', lambda m: ('Thermal ' if m.group(1) else '') + ('Springs' if (m.group(2) or '') == 'gs' else 'Spring'), nm, flags=re.I)
+    nm = re.sub(r'\s+\d+(SE|SW|NE|NW|[NSEW])$', '', nm)                                     # trailing "4SE" direction-from-town notes
+    nm = re.split(r'\s+[-–]\s+', nm)[0]                                                    # drop "- main pool at boil" style notes
+    if not [w for w in re.findall(r'[A-Za-z]{3,}', nm) if not re.fullmatch(r'[a-dA-D]+', w)]: return 'Unnamed spring'   # only codes left
+    return nm
+skipped_stream = 0
 for s in WQP_SITES:
-    nm = s['name']
-    if re.fullmatch(r'[\d\s-]+', nm) or not nm.strip(): nm = 'Unnamed spring'
-    A.append(rec('wqp', nm, s['st'], s['lat'], s['lon'], s['c'], s['yr'], 'Water Quality Portal: ' + s['org'], prec=s['prec']))
+    stream = bool(STREAM.search(s['name'] or ''))
+    skipped_stream += stream
+    A.append(rec('wqp', clean_wqp(s['name']), s['st'], s['lat'], s['lon'], s['c'], s['yr'], 'Water Quality Portal: ' + s['org'], prec=s['prec'], well=stream))
+print('Water Quality Portal stream/well points skipped:', skipped_stream)
 counts['wqp'] = len(WQP_SITES)
 json.dump([[s['name'], s['st'], s['lat'], s['lon'], None if sane(s['c'], s['st']) is None else round(sane(s['c'], s['st']), 1), s['yr'], s['org']] for s in WQP_SITES],
           open('/tmp/wqp_sites.json', 'w'))
