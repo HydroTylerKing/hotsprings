@@ -8,6 +8,19 @@
   const LABEL = {B:'Near boiling', V:'Very hot', H:'Hot', W:'Warm', C:'Cool', '':'Not available'};
   const ORDER = {'':0, C:1, W:2, H:3, V:4, B:5};
   // Temperature classes (°F): cool <90, warm 90–119, hot 120–159, very hot 160–189, near boiling ≥190.
+  // Continuous colour ramp by temperature (°F): blue (cool) → yellow → orange → red → deep red (near boiling).
+  const RAMP = [[60, [74, 144, 200]], [90, [245, 211, 39]], [120, [245, 150, 42]], [160, [232, 69, 42]], [200, [178, 20, 28]]];
+  const LABEL_F = {B:200, V:175, H:140, W:100, C:60};   // springs listed only as boiling/hot/warm, without a number
+  function rampColor(f) {
+    if (f == null) return '#222';
+    if (f <= RAMP[0][0]) f = RAMP[0][0]; if (f >= RAMP[RAMP.length - 1][0]) f = RAMP[RAMP.length - 1][0];
+    for (let k = 1; k < RAMP.length; k++) if (f <= RAMP[k][0]) {
+      const [a, ca] = RAMP[k - 1], [b, cb] = RAMP[k], t = (f - a) / (b - a);
+      return 'rgb(' + ca.map((v, j) => Math.round(v + (cb[j] - v) * t)).join(',') + ')';
+    }
+  }
+  const estF = d => d.f != null ? d.f : LABEL_F[d.cls] ?? null;
+  const colorOf = d => rampColor(estF(d));
   const clsOf = f => f >= 190 ? 'B' : f >= 160 ? 'V' : f >= 120 ? 'H' : f >= 90 ? 'W' : 'C';
   // Land status from USGS PAD-US (see data/springs.json land_source)
   const MGR = {USFS:'US Forest Service', BLM:'Bureau of Land Management', NPS:'National Park Service', FWS:'US Fish & Wildlife Service', USBR:'Bureau of Reclamation', DOD:'Dept. of Defense',
@@ -146,7 +159,6 @@
 
   // ---------- State ----------
   let S = [], unit = store.get('wt-unit', 'F'), sel = null, current = [];
-  const show = {B:true, V:true, H:true, W:true, C:false, '':true};   // cool springs start hidden; tick Cool in the legend to show them
   const fmt = (d, u = unit) => d.f == null ? (d.cls ? LABEL[d.cls] : '—') : (u === 'F' ? d.f + '°F' : d.c + '°C');
   const tempLong = d => d.f == null ? (d.cls ? LABEL[d.cls] + ' (no reading listed)' : 'Not available') : d.f + '°F / ' + d.c + '°C';
 
@@ -169,7 +181,7 @@
   const soakSvg = (k, fill, stroke, sw) => '<svg viewBox="0 0 24 24" width="100%" height="100%"><circle cx="12" cy="12" r="' + (11.2 - sw / 2) + '" fill="' + fill + '" stroke="' + stroke + '" stroke-width="' + sw + '"/>' + GLYPH[k] + '</svg>';
   function soakIcon(d, r, stroke, sw) {
     const px = Math.round(2 * r + 9);
-    return L.divIcon({className:'soakic', html:soakSvg(d.rec[0], COLORS[d.cls] || '#777', stroke, sw), iconSize:[px, px], iconAnchor:[px / 2, px / 2]});
+    return L.divIcon({className:'soakic', html:soakSvg(d.rec[0], colorOf(d), stroke, sw), iconSize:[px, px], iconAnchor:[px / 2, px / 2]});
   }
   function init(json) {
     S = json.springs.map((r, i) => ({i, name:r[0] || 'Unnamed spring', unnamed:!r[0], st:r[1], lat:r[2], lon:r[3], f:r[4], c:r[5], cls:r[6], quad:(r[7] || '').replace(/^\(|\)$/g, ''), land:r[8] || null, ss:r[9] || null, moved:r[10] || null, added:r[11] === 'S'}));
@@ -182,7 +194,7 @@
     S.forEach(d => { d.known = !!(d.rec && (d.rec[0] === 'D' || d.rec[0] === 'W')); });
     S.slice().sort((a, b) => (a.known - b.known) || (ORDER[a.cls] - ORDER[b.cls])).forEach(d => {   // known soaking spots on top
       d.m = d.known ? L.marker([d.lat, d.lon], {icon:soakIcon(d, 5, '#000', 1), keyboard:false, riseOnHover:true})
-                    : L.circleMarker([d.lat, d.lon], {renderer, radius:5, weight:1, color:'#000', opacity:.55, fillColor:COLORS[d.cls], fillOpacity:.95});
+                    : L.circleMarker([d.lat, d.lon], {renderer, radius:5, weight:1, color:'#000', opacity:.55, fillColor:colorOf(d), fillOpacity:.95});
       if (canHover) d.m.bindTooltip(() => esc(title(d.name)) + ' · ' + fmt(d), {direction:'top', offset:[0,-4]});
       d.m.on('click', () => select(d, false));
     });
@@ -222,7 +234,7 @@
       const ok = lf === 'open' ? c === 'P' : lf === 'limited' ? c === 'R' || c === 'U' : lf === 'public' ? 'PRU'.includes(c) && c !== '' : c === '' || c === 'V' || c === 'N';
       if (!ok) return false;
     }
-    return show[d.cls] && (!st || d.st === st) && (!term || d.name.toLowerCase().includes(term)) && (m <= 40 || (d.f != null && d.f >= m));
+    return (!st || d.st === st) && (!term || d.name.toLowerCase().includes(term)) && (m <= 40 || (estF(d) == null ? m <= 90 : estF(d) >= m));   // springs with no temperature at all stay visible up to the 90°F default
   }
   function update() {
     const inView = $('inView').checked && !document.querySelector('.app').classList.contains('max') ? map.getBounds() : (lastBounds && $('inView').checked ? lastBounds : null);
@@ -258,7 +270,7 @@
       const el = document.createElement('div');
       el.className = 'it' + (d === sel ? ' sel' : ''); el.dataset.i = d.i;
       const dist = d.dist != null && me ? (d.dist < 10 ? d.dist.toFixed(1) : Math.round(d.dist).toLocaleString()) + ' mi' : '';
-      el.innerHTML = '<span class="dot" style="background:' + COLORS[d.cls] + '"></span>' + (saved.has(d.i) ? '<span class="fv" title="Saved">★</span>' : visited.has(d.i) ? '<span class="fv v" title="Visited">✓</span>' : '') + '<span class="nm">' + esc(title(d.name)) + '</span><span class="st">' + d.st +
+      el.innerHTML = '<span class="dot" style="background:' + colorOf(d) + '"></span>' + (saved.has(d.i) ? '<span class="fv" title="Saved">★</span>' : visited.has(d.i) ? '<span class="fv v" title="Visited">✓</span>' : '') + '<span class="nm">' + esc(title(d.name)) + '</span><span class="st">' + d.st +
         '</span><span class="tp">' + fmt(d) + '</span><span class="tc">' + (d.c == null ? '—' : d.c + '°C') + '</span><span class="cl">' + LABEL[d.cls] +
         '</span><span class="ld" title="' + esc(d.land ? d.land[2] : '') + '">' + esc(d.land ? d.land[2] : landShort(d)) + '</span><span class="qd">' + esc(d.quad) + '</span><span class="ds">' + dist +
         '</span>' + (MEDIA[d.i] ? '<span class="mi" title="' + (MEDIA[d.i][1] ? 'Has photo' : 'Has description') + '">' + (MEDIA[d.i][1] ? CAM : BOOK) + '</span>' : '<span class="mi"></span>') + '<a class="gm" title="Open in Google Maps" target="_blank" rel="noopener" href="' + gmaps(d) + '">' + PIN + '</a>';
@@ -289,7 +301,7 @@
       '<tr><td>State</td><td>' + NAMES[d.st] + '</td></tr>' +
       '<tr><td>Temperature</td><td>' + tempLong(d) + (d.ss && (d.added || d.noaaNoTemp) ? ' <span class="srcnote">(' + (d.ss[2] ? 'measured ' + d.ss[2] : 'date not recorded') + ')</span>' : d.f != null && !d.added ? ' <span class="srcnote">(NOAA 1980)</span>' : '') + '</td></tr>' +
       (d.ss && !d.added && !d.noaaNoTemp ? '<tr><td>' + (d.ss[2] && d.ss[2] > 1980 ? 'Newer reading' : 'Other reading') + '</td><td>' + (unit === 'F' ? d.ss[0] + '°F' : d.ss[1] + '°C') + (d.ss[2] ? ', measured ' + d.ss[2] : ', date not recorded') + '</td></tr>' : '') +
-      '<tr><td>Class</td><td><span class="dot" style="background:' + COLORS[d.cls] + ';vertical-align:-1px"></span> ' + LABEL[d.cls] + '</td></tr>' +
+      '<tr><td>Class</td><td><span class="dot" style="background:' + colorOf(d) + ';vertical-align:-1px"></span> ' + LABEL[d.cls] + '</td></tr>' +
       '<tr><td>Latitude, longitude</td><td>' + lat + ', ' + lon + '</td></tr>' +
       '<tr><td>Land</td><td>' + (d.land ? esc(d.land[2]) + (MGR[d.land[1]] && !d.land[2].includes(MGR[d.land[1]]) ? ' <span style="color:var(--muted)">(' + MGR[d.land[1]] + ')</span>' : '') + '<br><span class="landtag ' + LANDCAT[d.land[0]][1] + '" style="margin-left:0">' + LANDCAT[d.land[0]][0] + '</span>' : '<span class="landtag no" style="margin-left:0">Private or unmapped</span>') + '</td></tr>' +
       (d.moved ? '<tr><td>Location</td><td>From state survey records; NOAA\'s 1980 point is ' + fmtDist(kmBetween(d.lat, d.lon, d.moved[0], d.moved[1])) + ' away</td></tr>' : '') +
@@ -433,8 +445,8 @@
 
   // ---------- Controls ----------
   function legendText() {
-    const t = unit === 'F' ? {B:'(≥190°F)', V:'(160–189°F)', H:'(120–159°F)', W:'(90–119°F)', C:'(<90°F)'} : {B:'(≥88°C)', V:'(71–87°C)', H:'(49–70°C)', W:'(32–48°C)', C:'(<32°C)'};
-    document.querySelectorAll('.lt').forEach(el => el.textContent = t[el.dataset.k]);
+    document.querySelectorAll('#rticks span').forEach(el => { const f = +el.dataset.f; el.textContent = unit === 'F' ? f + '°' : Math.round((f - 32) * 5 / 9) + '°'; });
+    $('runit').textContent = unit === 'F' ? '°F' : '°C';
   }
   function minLabel() { const v = minF(); $('minTv').textContent = v <= 40 ? 'any' : (unit === 'F' ? v + '°F' : Math.round((v - 32) * 5 / 9) + '°C'); }
   function setUnit(u) {
@@ -463,7 +475,6 @@
     else { const pts = S.filter(d => d.st === st).map(d => [d.lat, d.lon]); map.flyToBounds(L.latLngBounds(pts).pad(0.1), {duration:.6, maxZoom:9}); }
     update();
   });
-  document.querySelectorAll('#legend input').forEach(cb => cb.addEventListener('change', () => { show[cb.dataset.c] = cb.checked; update(); }));
   // legend collapse
   const legbtn = $('legbtn'), legbody = $('legbody');
   function setLeg(open) { legbody.hidden = !open; legbtn.setAttribute('aria-expanded', open); }
@@ -509,7 +520,7 @@
       if (!b.contains([r[2], r[3]])) continue;
       if (++n > NAMED_MAX) break;
       const warm = r[4] != null && r[4] >= 90;
-      L.circleMarker([r[2], r[3]], {renderer, radius:3.5, weight:1, color:'#2f5674', opacity:.8, fillColor: warm ? COLORS[clsOf(r[4])] : '#a9c6de', fillOpacity:.9})
+      L.circleMarker([r[2], r[3]], {renderer, radius:3.5, weight:1, color:'#2f5674', opacity:.8, fillColor: warm ? rampColor(r[4]) : '#a9c6de', fillOpacity:.9})
         .bindPopup(() => namedPopup(r)).addTo(namedLayer);
     }
     namedHint.textContent = n > NAMED_MAX ? 'Zoom in to see all' : '';
