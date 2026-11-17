@@ -44,7 +44,7 @@ for i, r in enumerate(S):
     if land and land[0] == 'T': put(r, 'P', 'On tribal land; visiting needs the tribe\'s permission', 'fallback'); continue
     if land and land[0] in ('P', 'R', 'U'): put(r, 'P', 'Warm and on public land, but no sign of regular use was found', 'fallback'); continue
     put(r, 'U', 'No sign of soaking found; may be on private land', 'fallback')
-json.dump({'note': 'Estimate of recreational soaking for springs at or above 90 F. Hand judgements plus OpenStreetMap (ODbL, (c) OpenStreetMap contributors) and Wikipedia evidence. Always check access and conditions.',
+json.dump({'note': 'Estimate of recreational soaking for springs at or above 90 F. Hand judgements plus OpenStreetMap (ODbL, (c) OpenStreetMap contributors) Wikipedia, state-by-state web searches and Google Places lookups, all reviewed by hand. Always check access and conditions.',
            'codes': {'D': 'Known soaking spot: commercial (resort, pool, bathhouse)', 'W': 'Known soaking spot: wild (undeveloped)', 'P': 'Possibly used', 'N': 'Unlikely or not allowed', 'U': 'No evidence found'},
            'r': out}, open('data/recreation.json', 'w'), separators=(',', ':'), ensure_ascii=False)
 from collections import Counter
