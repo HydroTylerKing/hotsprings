@@ -685,7 +685,13 @@
 
   // ---------- App: offline support, install button, offline notice ----------
   if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
-    window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+    // When a new version of the app takes over, reload once so the update shows without reopening.
+    const hadController = !!navigator.serviceWorker.controller; let reloaded = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => { if (hadController && !reloaded) { reloaded = true; location.reload(); } });
+    window.addEventListener('load', () => navigator.serviceWorker.register('sw.js', {updateViaCache:'none'}).then(reg => {
+      // Check for updates whenever the app comes back to the foreground (the Android app stays open for days).
+      document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') reg.update().catch(() => {}); });
+    }).catch(() => {}));
   }
   const standalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone;
   let installEvt = null;

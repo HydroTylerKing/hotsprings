@@ -3,7 +3,7 @@
    - Map tiles you have viewed are kept (up to TILE_MAX) so recently seen areas still draw offline.
    - Wikipedia/Commons text and photos are cached after first view.
    - Google Maps photos are never cached (Google's terms); they simply don't show offline. */
-const VERSION = 'wt-v46';
+const VERSION = 'wt-v47';
 const SHELL = 'shell-' + VERSION;
 const TILES = 'tiles-v2';
 const WIKI = 'wiki-v2';
@@ -23,7 +23,7 @@ const TILE_HOSTS = ['basemap.nationalmap.gov', 'tile.opentopomap.org', 'server.a
 const WIKI_HOSTS = ['en.wikipedia.org', 'commons.wikimedia.org', 'upload.wikimedia.org', 'thumb.wikimedia.org'];
 
 self.addEventListener('install', e => {
-  e.waitUntil(caches.open(SHELL).then(c => c.addAll(PRECACHE)).then(() => self.skipWaiting()));
+  e.waitUntil(caches.open(SHELL).then(c => c.addAll(PRECACHE.map(u => new Request(u, {cache:'reload'})))).then(() => self.skipWaiting()));
 });
 
 self.addEventListener('activate', e => {
@@ -41,7 +41,12 @@ async function trim(cacheName, max) {
 async function shellNetFirst(req) {
   const c = await caches.open(SHELL);
   const key = new Request(new URL(req.url).pathname);
-  const net = fetch(req).then(r => { if (r.ok) c.put(key, r.clone()); return r; });
+  // Unversioned files (the page itself, sw-listed files) skip the browser's HTTP cache, which GitHub
+  // Pages sets to 10 minutes; the server answers 304 when nothing changed, so this stays cheap.
+  const url = new URL(req.url);
+  const fresh = req.mode === 'navigate' ? fetch(url.href, {cache:'no-cache', credentials:'same-origin'})
+              : url.search ? fetch(req) : fetch(new Request(req, {cache:'no-cache'}));
+  const net = fresh.then(r => { if (r.ok) c.put(key, r.clone()); return r; });
   const timeout = new Promise(res => setTimeout(() => res(null), 4000));
   try {
     const r = await Promise.race([net, timeout]);
