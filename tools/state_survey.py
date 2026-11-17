@@ -1,5 +1,8 @@
-"""Fetch thermal springs from the National Geothermal Data System (state geological surveys, AASG-GDS,
-CC BY 4.0) and match them to the NOAA 1980 list in data/noaa1980.json.
+"""Fetch springs from the National Geothermal Data System (state geological surveys, AASG-GDS, CC BY 4.0), the
+Nevada Bureau of Mines and Geology geothermal database, the New Mexico Bureau of Geology (springs above 30 C) and
+the Water Quality Portal (spring sites with water temperature), and match them to the NOAA 1980 list in
+data/noaa1980.json. Water Quality Portal sites are added as new springs only when 20 C or warmer; all of them are
+also written to /tmp/wqp_sites.json for tools/named_springs.py.
 
 Writes data/ss_raw.json = {SRC: [citations], U: [updates for NOAA springs], NW: [new springs]}:
   U row:  [noaa_index, temp_f, temp_c, year, src] + optionally [lat, lon, land, loc_src] when a
@@ -75,6 +78,130 @@ for a in raw:
                   copy=bool(re.search(r'NOAA National Geophysical|Berry, George|Berry, G\.W|Thermal Springs List', src, re.I)),
                   well=('well' in ft and 'spring' not in ft), tk=toks(name + ' ' + (a.get('othername') or ''))))
 
+
+# ---- more sources: Nevada Bureau of Mines and Geology, New Mexico Bureau of Geology, Water Quality Portal
+FIPS = {'01':'AL','02':'AK','04':'AZ','05':'AR','06':'CA','08':'CO','09':'CT','10':'DE','11':'DC','12':'FL','13':'GA','15':'HI','16':'ID','17':'IL','18':'IN','19':'IA','20':'KS','21':'KY','22':'LA','23':'ME','24':'MD','25':'MA','26':'MI','27':'MN','28':'MS','29':'MO','30':'MT','31':'NE','32':'NV','33':'NH','34':'NJ','35':'NM','36':'NY','37':'NC','38':'ND','39':'OH','40':'OK','41':'OR','42':'PA','44':'RI','45':'SC','46':'SD','47':'TN','48':'TX','49':'UT','50':'VT','51':'VA','53':'WA','54':'WV','55':'WI','56':'WY','72':'PR'}
+def sane(c, st):
+    if c is None or not (0 <= c <= 105): return None
+    if c > 45 and st in EAST: return None
+    return c
+def rec(fam, name, st, lat, lon, c, yr, src, prec=4, well=False):
+    return dict(id=f'{fam}:{len(A)}', name=(name or '').strip(), st=st, lat=lat, lon=lon, prec=prec, c=sane(c, st), yr=yr, src=src, copy=False, well=well,
+                tk=toks(name), fam=fam)
+for a in A: a['fam'] = 'aasg'
+counts = {}
+
+# Nevada Bureau of Mines and Geology geothermal database ("Hot Springs and Wells"): one record per site, newest sample
+NB = 'https://web2.nbmg.unr.edu/arcgis/rest/services/Nevada_data/05_GeothermalData/MapServer/8/query'
+SPRING_T = {'S', 'SP', 'SPRING', 'SS', 'S?'}
+try:
+    rows, off = [], 0
+    while True:
+        j = get(NB, {'where': '1=1', 'outFields': 'SITE_ID,DATE,NAME,TYPE,STATE,REFERENCE,TEMP_C', 'outSR': 4326, 'resultOffset': off, 'resultRecordCount': 1000, 'orderByFields': 'OBJECTID', 'f': 'json'})
+        rows += j['features']
+        if len(j['features']) < 1000: break
+        off += 1000
+    site = {}
+    for f in rows:
+        at, g = f['attributes'], f.get('geometry') or {}
+        if (at.get('TYPE') or '').upper() not in SPRING_T or not g.get('x'): continue
+        k = at.get('SITE_ID') or f"{g['y']:.4f},{g['x']:.4f}"
+        t = at.get('TEMP_C'); t = None if t is None or t < -90 else t
+        ms = at.get('DATE'); yr = time.gmtime(ms / 1000).tm_year if isinstance(ms, (int, float)) and ms > 0 else None
+        cur = site.get(k)
+        if cur is None or ((t is not None) and (cur['t'] is None or (yr or 0) > (cur['yr'] or 0))):
+            site[k] = dict(t=t, yr=yr, at=at, g=g)
+    for s in site.values():
+        at = s['at']; nm = at.get('NAME') or ''
+        if re.fullmatch(r'(?i)(spring|unnamed( spring)?|well|)', nm.strip()): nm = 'Unnamed spring'
+        src = 'Nevada Bureau of Mines and Geology geothermal database' + (' (' + at['REFERENCE'].strip() + ')' if (at.get('REFERENCE') or '').strip() else '')
+        A.append(rec('nbmg', nm, at.get('STATE'), round(s['g']['y'], 5), round(s['g']['x'], 5), s['t'], s['yr'], src))
+    counts['nbmg'] = len(site)
+except Exception as e:
+    print('NBMG failed:', e)
+
+# New Mexico Bureau of Geology: springs discharging above 30 C (Kelley 2015, doi:10.15121/1223849, CC BY 4.0)
+try:
+    import subprocess, sys
+    subprocess.run([sys.executable, '-m', 'pip', 'install', '-q', 'xlrd', 'pyproj'], check=True)
+    import xlrd
+    from pyproj import Transformer
+    with urllib.request.urlopen(urllib.request.Request('https://gdr.openei.org/files/558/NewMexicoSpgs_Over_30C_AMP.xls', headers={'User-Agent': 'wildflower-touring-hotsprings'}), timeout=120) as r:
+        sh = xlrd.open_workbook(file_contents=r.read()).sheet_by_index(0)
+    hdr = sh.row_values(0); ix = {h: i for i, h in enumerate(hdr)}
+    tz = {z: Transformer.from_crs(f'EPSG:269{z}', 'EPSG:4326', always_xy=True) for z in (12, 13)}
+    n = 0
+    for ri in range(1, sh.nrows):
+        v = sh.row_values(ri)
+        e, nn = v[ix['NAD83 UTM Easting']], v[ix['NAD83 UTM Northing']]
+        if not e or not nn: continue
+        lon, lat = tz[13].transform(e, nn)
+        if lon < -109.06: lon, lat = tz[12].transform(e, nn)
+        if not (31.3 <= lat <= 37.1 and -109.1 <= lon <= -103): continue
+        t = v[ix['Sample Value']] if v[ix['Field Parameter']] == 'T' else None
+        u = str(v[ix['Units']])
+        if t not in ('', None) and 'F' in u: t = (t - 32) * 5 / 9
+        d = v[ix['Collection Date']]; yr = xlrd.xldate_as_tuple(d, 0)[0] if isinstance(d, float) and d > 0 else None
+        A.append(rec('nm', 'Unnamed spring (' + str(v[ix['Point ID']]) + ')', 'NM', round(lat, 5), round(lon, 5), t if t != '' else None, yr,
+                     'New Mexico Bureau of Geology and Mineral Resources, Aquifer Mapping Program: springs discharging above 30 °C (Kelley, 2015, doi:10.15121/1223849, CC BY 4.0)'))
+        n += 1
+    counts['nm'] = n
+except Exception as e:
+    print('New Mexico failed:', e)
+
+# Water Quality Portal (USGS, EPA, National Park Service and others): spring sites with water temperature, newest reading per site
+import csv, io, zipfile
+WQP = 'https://www.waterqualitydata.us/data/'
+def wqp(kind, st, extra):
+    p = dict({'statecode': 'US:' + st, 'siteType': 'Spring', 'characteristicName': 'Temperature, water', 'mimeType': 'csv', 'zip': 'yes'}, **extra)
+    for t in range(3):
+        try:
+            with urllib.request.urlopen(urllib.request.Request(WQP + kind + '/search?' + urllib.parse.urlencode(p), headers={'User-Agent': 'wildflower-touring-hotsprings'}), timeout=900) as r:
+                b = r.read()
+            if not b: return []
+            z = zipfile.ZipFile(io.BytesIO(b))
+            with z.open(z.namelist()[0]) as fh:
+                return list(csv.DictReader(io.TextIOWrapper(fh, 'utf-8', errors='replace')))
+        except zipfile.BadZipFile:
+            return []
+        except Exception as e:
+            if t == 2: print('WQP', kind, st, 'failed:', e); return []
+            time.sleep(10)
+WQP_SITES = []
+def wqp_state(code):
+    stn = wqp('Station', code, {})
+    if not stn: return []
+    res = wqp('Result', code, {'dataProfile': 'narrowResult'})
+    best = {}
+    for r in res:
+        try: v = float(r.get('ResultMeasureValue') or '')
+        except ValueError: continue
+        u = (r.get('ResultMeasure/MeasureUnitCode') or '').lower()
+        c = (v - 32) * 5 / 9 if 'f' in u else v
+        d = r.get('ActivityStartDate') or ''
+        k = r['MonitoringLocationIdentifier']
+        if k not in best or d > best[k][1]: best[k] = (c, d)
+    out = []
+    for s in stn:
+        k = s['MonitoringLocationIdentifier']
+        try: lat, lon = float(s['LatitudeMeasure']), float(s['LongitudeMeasure'])
+        except ValueError: continue
+        if k not in best or not lat or not lon: continue
+        c, d = best[k]
+        out.append(dict(name=s.get('MonitoringLocationName') or '', st=FIPS.get(code), lat=round(lat, 5), lon=round(lon, 5), c=c, yr=int(d[:4]) if d[:4].isdigit() else None,
+                        org=s.get('OrganizationFormalName') or s.get('OrganizationIdentifier') or '', prec=min(dec(lat), dec(lon))))
+    return out
+with ThreadPoolExecutor(4) as ex:
+    for lst in ex.map(wqp_state, sorted(FIPS)): WQP_SITES += lst
+for s in WQP_SITES:
+    nm = s['name']
+    if re.fullmatch(r'[\d\s-]+', nm) or not nm.strip(): nm = 'Unnamed spring'
+    A.append(rec('wqp', nm, s['st'], s['lat'], s['lon'], s['c'], s['yr'], 'Water Quality Portal: ' + s['org'], prec=s['prec']))
+counts['wqp'] = len(WQP_SITES)
+json.dump([[s['name'], s['st'], s['lat'], s['lon'], None if sane(s['c'], s['st']) is None else round(sane(s['c'], s['st']), 1), s['yr'], s['org']] for s in WQP_SITES],
+          open('/tmp/wqp_sites.json', 'w'))
+print('more sources:', counts)
+
 S = json.load(open('data/noaa1980.json'))['springs']
 N = [dict(i=i, lat=r[2], lon=r[3], tk=toks(r[0])) for i, r in enumerate(S)]
 
@@ -104,22 +231,22 @@ for a in A:
 out = {}
 for i, l in per.items():
     temps = sorted([a for a in l if a['c'] is not None], key=lambda a: (-(a['yr'] or 0), a['kind'] != 'name', a['md']))
-    locs = sorted([a for a in l if a['kind'] == 'name' and a['prec'] >= 4 and 0.1 <= a['md'] <= 2], key=lambda a: (-a['prec'], a['md']))
+    locs = sorted([a for a in l if a['fam'] == 'aasg' and a['kind'] == 'name' and a['prec'] >= 4 and 0.1 <= a['md'] <= 2], key=lambda a: (-a['prec'], a['md']))
     if temps or locs: out[i] = (temps[0] if temps else None, locs[0] if locs else None)
 
 # ---- new springs: every unmatched spring (any temperature), not near or named like a NOAA spring
 GEN2 = {'COMPLEX'}
 NT = [dict(lat=r[2], lon=r[3], tk=toks(r[0], 3, GEN2)) for r in S]
 def clean(n): return re.sub(r'\s+', ' ', re.sub(r'^[A-Za-z .]+ County ', '', n)).strip()
-cands = [a for a in A if 'm' not in a and not a['copy'] and not a['well']
+cands = [a for a in A if 'm' not in a and not a['copy'] and not a['well'] and (a['fam'] != 'wqp' or (a['c'] is not None and a['c'] >= 20))
          and not re.search(r'fumarole|gas vent|\bgas\b|\bmine\b|\bwell\b', a['name'], re.I)]
 cands = [a for a in cands if not any(abs(la - a['lat']) < 0.01 and abs(lo - a['lon']) < 0.013 and km(la, lo, a['lat'], a['lon']) < 0.5 for la, lo in ((r[2], r[3]) for r in S))]
 cands = [a for a in cands if not any(abs(n['lat'] - a['lat']) < 0.05 and abs(n['lon'] - a['lon']) < 0.07 and km(n['lat'], n['lon'], a['lat'], a['lon']) < 5
                                      and set(toks(clean(a['name']), 3, GEN2)) & set(n['tk']) for n in NT)]
-cands.sort(key=lambda a: (a['c'] is None, -(a['yr'] or 0), -a['prec']))
+cands.sort(key=lambda a: (a['c'] is None, a['fam'] == 'wqp', -(a['yr'] or 0), -a['prec']))
 keep = []
 for a in cands:
-    if not any(km(k['lat'], k['lon'], a['lat'], a['lon']) < 0.3 and (any(hit(w, a['tk']) for w in k['tk']) or not k['tk'] or not a['tk']) for k in keep):
+    if not any(abs(k['lat'] - a['lat']) < 0.003 and abs(k['lon'] - a['lon']) < 0.004 and km(k['lat'], k['lon'], a['lat'], a['lon']) < 0.3 and (any(hit(w, a['tk']) for w in k['tk']) or not k['tk'] or not a['tk']) for k in keep):
         keep.append(a)
 for a in keep:
     n = clean(a['name']) or 'Unnamed spring'
