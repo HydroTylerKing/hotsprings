@@ -234,7 +234,7 @@
       const ok = lf === 'open' ? c === 'P' : lf === 'limited' ? c === 'R' || c === 'U' : lf === 'public' ? 'PRU'.includes(c) && c !== '' : c === '' || c === 'V' || c === 'N';
       if (!ok) return false;
     }
-    return (!st || d.st === st) && (!term || d.name.toLowerCase().includes(term)) && (m <= 40 || (estF(d) == null ? m <= 90 : estF(d) >= m));   // springs with no temperature at all stay visible up to the 90°F default
+    return (!st || d.st === st) && (!term || d.name.toLowerCase().includes(term)) && (m <= 40 || (estF(d) == null ? m <= 80 : estF(d) >= m));   // springs with no temperature at all stay visible up to the 80°F default
   }
   function update() {
     const inView = $('inView').checked && !document.querySelector('.app').classList.contains('max') ? map.getBounds() : (lastBounds && $('inView').checked ? lastBounds : null);

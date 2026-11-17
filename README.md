@@ -6,7 +6,7 @@ An interactive map of US springs: the 1,661 thermal springs of NOAA's 1980 list 
 
 - Basemaps: USGS Topo, OpenTopoMap, satellite imagery (Esri), USGS imagery + topo, Esri Topo, shaded relief, OpenStreetMap streets, and Esri light and dark gray
 - An optional road and place-label overlay for the imagery basemaps
-- Springs colored on a continuous temperature ramp (blue for cool through yellow and orange to deep red near boiling); the minimum-temperature slider starts at 90 °F
+- Springs colored on a continuous temperature ramp (blue for cool through yellow and orange to deep red near boiling); the minimum-temperature slider starts at 80 °F and goes up to 212 °F
 - A popup for each spring showing its name, linked to Google Maps, and its temperature
 - Search by name, filter by state or minimum temperature, and sort by name, temperature or distance from you
 - A results list limited to the current map view, which can expand into a full-screen table
