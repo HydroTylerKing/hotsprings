@@ -151,7 +151,7 @@
   // Wikipedia article / Commons photo matched to each spring (data/media.json); text and credits load live
   let MEDIA = {};
   const mediaReady = fetch('data/media.json?v=2').then(r => r.ok ? r.json() : {m:{}}).then(j => { MEDIA = j.m || {}; }).catch(() => {});
-  const recReady = fetch('data/recreation.json?v=1').then(r => r.ok ? r.json() : {}).then(j => { REC = j.r || {}; }).catch(() => {});
+  const recReady = fetch('data/recreation.json?v=2').then(r => r.ok ? r.json() : {}).then(j => { REC = j.r || {}; }).catch(() => {});
   Promise.all([fetch('data/springs.json?v=7').then(r => r.json()), mediaReady, recReady]).then(([j]) => init(j)).catch(err => {
     alertMsg('Could not load spring data (' + err + ').');
   });

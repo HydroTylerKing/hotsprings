@@ -32,9 +32,9 @@ for i, r in enumerate(S):
     nm = lambda o: o[1] or o[0].replace('_', ' ')
     if dev: put(r, 'D', 'OpenStreetMap shows ' + nm(dev[0]) + ' (' + dev[0][0].replace('_', ' ') + ') here', 'osm'); continue
     if wild: put(r, 'W', 'OpenStreetMap marks a bathing spot here' + (' (' + nm(wild[0]) + ')' if wild[0][1] else ''), 'osm'); continue
-    if wk_dev and not wk_closed: put(r, 'D', 'Wikipedia: ' + wk_dev[0][0] + ' describes developed bathing here', 'wiki'); continue
-    if wk_wild and not wk_closed: put(r, 'W', 'Wikipedia: ' + wk_wild[0][0] + ' describes people soaking here', 'wiki'); continue
-    if closed or wk_closed: put(r, 'N', 'Mapped as private or closed' if closed else 'Wikipedia: ' + wk_closed[0][0] + ' describes it as closed or private', 'osm' if closed else 'wiki'); continue
+    if closed: put(r, 'N', 'Mapped as private or closed', 'osm'); continue
+    # Wikipedia evidence is not applied automatically: articles about former resorts read like current ones.
+    # Articles about a spring itself were reviewed by hand (see tools/rec_judgement.py).
     if r[4] >= 160: put(r, 'N', 'Scalding at the source, with no sign of soaking pools', 'fallback'); continue
     if land and land[0] == 'T': put(r, 'P', 'On tribal land; visiting needs the tribe\'s permission', 'fallback'); continue
     if land and land[0] in ('P', 'R', 'U'): put(r, 'P', 'Warm and on public land, but no sign of regular use was found', 'fallback'); continue

@@ -66,3 +66,14 @@ Marker locations are only ever moved using state geological survey records.
 ### Named springs layer
 
 `tools/named_springs.py` builds `data/named_springs.json` from the USGS Geographic Names Information System (feature class *Spring*, public domain): every named spring not already among the main springs (within 150 m, or 600 m with a shared name word). A Water Quality Portal temperature is attached when a spring site with a matching name lies within 1 km, or any site within 200 m. The app loads this file only when **Named springs** is ticked in the legend, and draws it from zoom 8 in (up to 4,000 points at a time). These springs are not in the list, filters or offline saves.
+
+## Soaking estimate
+
+For springs at or above 90 °F, `data/recreation.json` (built by `tools/recreation.py`) gives an estimate of recreational use, keyed by `lat,lon` rounded to 3 decimals: **D** developed soaking (resort, pool, bathhouse), **W** popular wild soak, **P** possibly used, **N** unlikely or not allowed, **U** no evidence found, each with a one-line reason. Precedence:
+
+1. Hand judgements in `tools/rec_judgement.py` (about 400 springs: well-known resorts and wild soaks, closed or private former resorts, power plants, volcanic vents).
+2. Rules: thermal areas in parks where soaking is banned (Yellowstone, Lassen, Mount Rainier, Valles Caldera, Ash Meadows and others) and military land are **N**.
+3. OpenStreetMap evidence from `tools/rec_evidence.py` (public baths, pools and bathing spots within 400 m). The public Overpass servers refused most requests from GitHub's runners, so this currently contributes little.
+4. Fallbacks: scalding (160 °F+) with no evidence of pools is **N**; warm springs on public land are **P**; the rest **U**.
+
+Wikipedia articles near each spring are gathered in `data/rec_evidence.json` but not applied automatically (articles about former resorts read like current ones); articles about a spring itself were reviewed by hand.
