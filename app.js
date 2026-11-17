@@ -4,9 +4,11 @@
   'use strict';
 
   const NAMES = {'AL':'Alabama','AK':'Alaska','AZ':'Arizona','AR':'Arkansas','CA':'California','CO':'Colorado','CT':'Connecticut','DE':'Delaware','FL':'Florida','GA':'Georgia','HI':'Hawaii','ID':'Idaho','IL':'Illinois','IN':'Indiana','IA':'Iowa','KS':'Kansas','KY':'Kentucky','LA':'Louisiana','ME':'Maine','MD':'Maryland','MA':'Massachusetts','MI':'Michigan','MN':'Minnesota','MS':'Mississippi','MO':'Missouri','MT':'Montana','NE':'Nebraska','NV':'Nevada','NH':'New Hampshire','NJ':'New Jersey','NM':'New Mexico','NY':'New York','NC':'North Carolina','ND':'North Dakota','OH':'Ohio','OK':'Oklahoma','OR':'Oregon','PA':'Pennsylvania','RI':'Rhode Island','SC':'South Carolina','SD':'South Dakota','TN':'Tennessee','TX':'Texas','UT':'Utah','VT':'Vermont','VA':'Virginia','WA':'Washington','WV':'West Virginia','WI':'Wisconsin','WY':'Wyoming','DC':'District of Columbia','PR':'Puerto Rico'};
-  const COLORS = {B:'#d7191c', H:'#f28c28', W:'#f5d327', C:'#4a90c8', '':'#222'};
-  const LABEL = {B:'Boiling', H:'Hot', W:'Warm', C:'Cool', '':'Not available'};
-  const ORDER = {'':0, C:1, W:2, H:3, B:4};
+  const COLORS = {B:'#b2141c', V:'#e8452a', H:'#f5962a', W:'#f5d327', C:'#4a90c8', '':'#222'};
+  const LABEL = {B:'Near boiling', V:'Very hot', H:'Hot', W:'Warm', C:'Cool', '':'Not available'};
+  const ORDER = {'':0, C:1, W:2, H:3, V:4, B:5};
+  // Temperature classes (°F): cool <90, warm 90–119, hot 120–159, very hot 160–189, near boiling ≥190.
+  const clsOf = f => f >= 190 ? 'B' : f >= 160 ? 'V' : f >= 120 ? 'H' : f >= 90 ? 'W' : 'C';
   // Land status from USGS PAD-US (see data/springs.json land_source)
   const MGR = {USFS:'US Forest Service', BLM:'Bureau of Land Management', NPS:'National Park Service', FWS:'US Fish & Wildlife Service', USBR:'Bureau of Reclamation', DOD:'Dept. of Defense',
     SDNR:'State land', SDOL:'State land', SLB:'State trust land', SPR:'State parks', SFW:'State fish & wildlife', OTHS:'State', CNTY:'County', CITY:'City', REG:'Regional district',
@@ -144,7 +146,7 @@
 
   // ---------- State ----------
   let S = [], unit = store.get('wt-unit', 'F'), sel = null, current = [];
-  const show = {B:true, H:true, W:true, C:false, '':true};   // cool springs start hidden; tick Cool in the legend to show them
+  const show = {B:true, V:true, H:true, W:true, C:false, '':true};   // cool springs start hidden; tick Cool in the legend to show them
   const fmt = (d, u = unit) => d.f == null ? (d.cls ? LABEL[d.cls] : '—') : (u === 'F' ? d.f + '°F' : d.c + '°C');
   const tempLong = d => d.f == null ? (d.cls ? LABEL[d.cls] + ' (no reading listed)' : 'Not available') : d.f + '°F / ' + d.c + '°C';
 
@@ -172,6 +174,7 @@
   function init(json) {
     S = json.springs.map((r, i) => ({i, name:r[0] || 'Unnamed spring', unnamed:!r[0], st:r[1], lat:r[2], lon:r[3], f:r[4], c:r[5], cls:r[6], quad:(r[7] || '').replace(/^\(|\)$/g, ''), land:r[8] || null, ss:r[9] || null, moved:r[10] || null, added:r[11] === 'S'}));
     SS_SRC = json.ss_sources || [];
+    S.forEach(d => { if (d.f != null) d.cls = clsOf(d.f); });   // class follows the reading; springs listed only as boiling/hot/warm keep that label
     S.forEach(d => { d.rec = REC[recKey(d)] || null; });
     const sub = document.querySelector('header .sub'); if (sub) sub.textContent = S.length.toLocaleString() + ' springs across the US · data: NOAA Thermal Springs List (1980), state geological surveys and USGS';
     S.forEach(d => { d.noaaNoTemp = !d.added && !!d.ss && d.ss[4] === 1; });   // NOAA listed no reading, so the state survey's is shown
@@ -230,7 +233,7 @@
       if (ok && (!inView || inView.contains([d.lat, d.lon]))) visible.push(d);
     });
     if (sel && map.hasLayer(sel.m) && sel.m.bringToFront) sel.m.bringToFront();
-    const s = sortSel.value, tv = d => d.f == null ? ({B:212, H:150, W:90, C:55}[d.cls] ?? -1) : d.f;
+    const s = sortSel.value, tv = d => d.f == null ? ({B:200, V:175, H:140, W:100, C:60}[d.cls] ?? -1) : d.f;
     const clean = n => n.replace(/^\W+/, '');
     if (s === 'near' && me) visible.forEach(d => d.dist = distMi(d));
     visible.sort(
@@ -430,7 +433,7 @@
 
   // ---------- Controls ----------
   function legendText() {
-    const t = unit === 'F' ? {B:'(≥194°F)', H:'(122–193°F)', W:'(68–121°F)', C:'(<68°F)'} : {B:'(≥90°C)', H:'(50–89°C)', W:'(20–49°C)', C:'(<20°C)'};
+    const t = unit === 'F' ? {B:'(≥190°F)', V:'(160–189°F)', H:'(120–159°F)', W:'(90–119°F)', C:'(<90°F)'} : {B:'(≥88°C)', V:'(71–87°C)', H:'(49–70°C)', W:'(32–48°C)', C:'(<32°C)'};
     document.querySelectorAll('.lt').forEach(el => el.textContent = t[el.dataset.k]);
   }
   function minLabel() { const v = minF(); $('minTv').textContent = v <= 40 ? 'any' : (unit === 'F' ? v + '°F' : Math.round((v - 32) * 5 / 9) + '°C'); }
@@ -505,8 +508,8 @@
     for (const r of NAMED) {
       if (!b.contains([r[2], r[3]])) continue;
       if (++n > NAMED_MAX) break;
-      const warm = r[4] != null && r[4] >= 68;
-      L.circleMarker([r[2], r[3]], {renderer, radius:3.5, weight:1, color:'#2f5674', opacity:.8, fillColor: warm ? COLORS[r[4] >= 122 ? 'H' : 'W'] : '#a9c6de', fillOpacity:.9})
+      const warm = r[4] != null && r[4] >= 90;
+      L.circleMarker([r[2], r[3]], {renderer, radius:3.5, weight:1, color:'#2f5674', opacity:.8, fillColor: warm ? COLORS[clsOf(r[4])] : '#a9c6de', fillOpacity:.9})
         .bindPopup(() => namedPopup(r)).addTo(namedLayer);
     }
     namedHint.textContent = n > NAMED_MAX ? 'Zoom in to see all' : '';

@@ -3,7 +3,7 @@
   /* palette sampled from the Wildflower Touring badge */
   --navy:#2c4a6e; --navy2:#3a597c; --leaf:#51634d; --poppy:#be6b47; --sky:#b4d8ea; --tint:#e6eff5;
   --paper:#f2f0e4; --ink:#1d2430; --muted:#5d6675; --line:#c9c3b6;
-  --boil:#d7191c; --hot:#f28c28; --warm:#f5d327; --na:#222;
+  --boil:#b2141c; --vhot:#e8452a; --hot:#f5962a; --warm:#f5d327; --na:#222;
 }
 *{box-sizing:border-box}
 html,body{margin:0;height:100%;font:14px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--paper)}

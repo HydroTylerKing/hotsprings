@@ -14,7 +14,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="theme-color" content="#f2f0e4">
 <link rel="stylesheet" href="vendor/leaflet/leaflet.css">
-<link rel="stylesheet" href="style.css?v=22">
+<link rel="stylesheet" href="style.css?v=23">
 </head>
 <body>
 <header>
@@ -38,14 +38,15 @@
       </div>
     </div>
     <div class="legend" id="legend">
-      <button class="lh" id="legbtn" aria-expanded="true" title="Show or hide the legend"><span class="chev">▸</span>Temperature<span class="mini"><span class="dot" style="background:var(--boil)"></span><span class="dot" style="background:var(--hot)"></span><span class="dot" style="background:var(--warm)"></span><span class="dot" style="background:var(--na)"></span></span></button>
+      <button class="lh" id="legbtn" aria-expanded="true" title="Show or hide the legend"><span class="chev">▸</span>Temperature<span class="mini"><span class="dot" style="background:var(--boil)"></span><span class="dot" style="background:var(--vhot)"></span><span class="dot" style="background:var(--hot)"></span><span class="dot" style="background:var(--warm)"></span><span class="dot" style="background:var(--na)"></span></span></button>
       <div class="lb" id="legbody" title="Measured temps are binned; springs listed only as boiling/hot/warm in the source keep that label.">
-        <label><input type="checkbox" data-c="B" checked><span class="dot" style="background:var(--boil)"></span>Boiling <span class="lt" data-k="B"></span></label>
+        <label><input type="checkbox" data-c="B" checked><span class="dot" style="background:var(--boil)"></span>Near boiling <span class="lt" data-k="B"></span></label>
+        <label><input type="checkbox" data-c="V" checked><span class="dot" style="background:var(--vhot)"></span>Very hot <span class="lt" data-k="V"></span></label>
         <label><input type="checkbox" data-c="H" checked><span class="dot" style="background:var(--hot)"></span>Hot <span class="lt" data-k="H"></span></label>
         <label><input type="checkbox" data-c="W" checked><span class="dot" style="background:var(--warm)"></span>Warm <span class="lt" data-k="W"></span></label>
         <label><input type="checkbox" data-c="C"><span class="dot" style="background:#4a90c8"></span>Cool <span class="lt" data-k="C"></span></label>
         <label><input type="checkbox" data-c="" checked><span class="dot" style="background:var(--na)"></span>No data</label>
-        <div class="soakkey" title="Soaking estimate. Commercial: resort, pool or bathhouse. Wild: undeveloped pools people use. Colour still shows temperature."><div><span class="si"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10.6" fill="#e8833a" stroke="rgba(0,0,0,.75)" stroke-width="1.2"/><path d="M12 5.2 5.6 10.6h1.9v7.2h3.6v-4.4h1.8v4.4h3.6v-7.2h1.9z" fill="#fff"/></svg></span>Commercial soak</div><div><span class="si"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10.6" fill="#e8833a" stroke="rgba(0,0,0,.75)" stroke-width="1.2"/><g fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round"><path d="M5.8 13.6c1.2 3.6 11.2 3.6 12.4 0"/><path d="M9 12c-1-1.3 1-2.4 0-3.7s1-2.4 0-3.4"/><path d="M12 12c-1-1.3 1-2.4 0-3.7s1-2.4 0-3.4"/><path d="M15 12c-1-1.3 1-2.4 0-3.7s1-2.4 0-3.4"/></g></svg></span>Wild soak</div><div><span class="dot faint"></span>Other springs</div></div>
+        <div class="soakkey" title="Soaking estimate. Commercial: resort, pool or bathhouse. Wild: undeveloped pools people use. Colour still shows temperature."><div><span class="si"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10.6" fill="#f5962a" stroke="rgba(0,0,0,.75)" stroke-width="1.2"/><path d="M12 5.2 5.6 10.6h1.9v7.2h3.6v-4.4h1.8v4.4h3.6v-7.2h1.9z" fill="#fff"/></svg></span>Commercial soak</div><div><span class="si"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10.6" fill="#f5962a" stroke="rgba(0,0,0,.75)" stroke-width="1.2"/><g fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round"><path d="M5.8 13.6c1.2 3.6 11.2 3.6 12.4 0"/><path d="M9 12c-1-1.3 1-2.4 0-3.7s1-2.4 0-3.4"/><path d="M12 12c-1-1.3 1-2.4 0-3.7s1-2.4 0-3.4"/><path d="M15 12c-1-1.3 1-2.4 0-3.7s1-2.4 0-3.4"/></g></svg></span>Wild soak</div><div><span class="dot faint"></span>Other springs</div></div>
         <label class="named" title="About 35,000 springs from USGS place names, mostly cool and without readings. Shown from zoom 8 in."><input type="checkbox" id="namedChk" autocomplete="off"><span class="dot" style="background:#a9c6de;border:1px solid #2f5674"></span>Named springs <span class="nh" id="namedHint"></span></label>
       </div>
     </div>
@@ -128,6 +129,6 @@
 </dialog>
 <script src="vendor/leaflet/leaflet.js"></script>
 <script src="config.js?v=13"></script>
-<script src="app.js?v=41"></script>
+<script src="app.js?v=42"></script>
 </body>
 </html>

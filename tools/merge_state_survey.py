@@ -8,7 +8,7 @@ Fields per spring: name, state, lat, lon, temp_f, temp_c, class, usgs_quad, land
 Springs added from the state surveys come after the 1,661 NOAA springs, so NOAA indexes never change."""
 import json
 noaa = json.load(open('data/noaa1980.json')); ss = json.load(open('data/ss_raw.json'))
-cls = lambda f, name='': ('B' if f >= 194 else 'H' if f >= 122 else 'W' if f >= 68 else 'C') if f is not None else ('H' if 'HOT' in name.upper() else 'W' if 'WARM' in name.upper() else '')
+cls = lambda f, name='': ('B' if f >= 190 else 'V' if f >= 160 else 'H' if f >= 120 else 'W' if f >= 90 else 'C') if f is not None else ('H' if 'HOT' in name.upper() else 'W' if 'WARM' in name.upper() else '')
 rows = [r[:9] + [None, None, 'N'] for r in noaa['springs']]
 dropped = 0
 for u in ss['U']:
