@@ -166,7 +166,8 @@
     const sub = document.querySelector('header .sub'); if (sub) sub.textContent = S.length.toLocaleString() + ' springs across the US · data: NOAA Thermal Springs List (1980), state geological surveys and USGS';
     S.forEach(d => { d.noaaNoTemp = !d.added && !!d.ss && d.ss[4] === 1; });   // NOAA listed no reading, so the state survey's is shown
     // markers (hotter drawn on top)
-    S.slice().sort((a, b) => ORDER[a.cls] - ORDER[b.cls]).forEach(d => {
+    S.forEach(d => { d.known = !!(d.rec && (d.rec[0] === 'D' || d.rec[0] === 'W')); });
+    S.slice().sort((a, b) => (a.known - b.known) || (ORDER[a.cls] - ORDER[b.cls])).forEach(d => {   // known soaking spots on top
       d.m = L.circleMarker([d.lat, d.lon], {renderer, radius:5, weight:1, color:'#000', opacity:.55, fillColor:COLORS[d.cls], fillOpacity:.95});
       if (canHover) d.m.bindTooltip(() => esc(title(d.name)) + ' · ' + fmt(d), {direction:'top', offset:[0,-4]});
       d.m.on('click', () => select(d, false));
@@ -184,7 +185,9 @@
   // ---------- Marker size by zoom ----------
   function restyle() {
     const z = map.getZoom(), r = z < 5 ? 4 : z < 7 ? 5 : z < 10 ? 6.5 : 8;
-    S.forEach(d => d.m.setStyle(d === sel ? {radius:r + 3, weight:3, color:'#00a3ff', opacity:1} : saved.has(d.i) ? {radius:r + 1, weight:2.5, color:'#be6b47', opacity:1} : {radius:r, weight:1, color:curBM && (curBM.dark || curBM.imagery) ? '#fff' : '#000', opacity:curBM && (curBM.dark || curBM.imagery) ? .8 : .55}));
+    const dk = curBM && (curBM.dark || curBM.imagery);
+    // Known soaking spots (commercial or wild) are solid; everything else is about half transparent.
+    S.forEach(d => d.m.setStyle(d === sel ? {radius:r + 3, weight:3, color:'#00a3ff', opacity:1, fillOpacity:1} : saved.has(d.i) ? {radius:r + 1, weight:2.5, color:'#be6b47', opacity:1, fillOpacity:d.known ? 1 : .5} : {radius:r, weight:1, color:dk ? '#fff' : '#000', opacity:d.known ? (dk ? .9 : .7) : (dk ? .4 : .25), fillOpacity:d.known ? 1 : .5}));
   }
   map.on('zoomend', restyle);
   map.on('baselayerchange', restyle);

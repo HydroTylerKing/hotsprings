@@ -14,7 +14,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="theme-color" content="#f2f0e4">
 <link rel="stylesheet" href="vendor/leaflet/leaflet.css">
-<link rel="stylesheet" href="style.css?v=20">
+<link rel="stylesheet" href="style.css?v=21">
 </head>
 <body>
 <header>
@@ -45,6 +45,7 @@
         <label><input type="checkbox" data-c="W" checked><span class="dot" style="background:var(--warm)"></span>Warm <span class="lt" data-k="W"></span></label>
         <label><input type="checkbox" data-c="C"><span class="dot" style="background:#4a90c8"></span>Cool <span class="lt" data-k="C"></span></label>
         <label><input type="checkbox" data-c="" checked><span class="dot" style="background:var(--na)"></span>No data</label>
+        <div class="soakkey" title="Known soaking spots are commercial (resort, pool, bathhouse) or wild (undeveloped pools people use). Estimate only."><span class="dot solid"></span>Known soaking spot <span class="dot faint"></span>Other</div>
         <label class="named" title="About 35,000 springs from USGS place names, mostly cool and without readings. Shown from zoom 8 in."><input type="checkbox" id="namedChk" autocomplete="off"><span class="dot" style="background:#a9c6de;border:1px solid #2f5674"></span>Named springs <span class="nh" id="namedHint"></span></label>
       </div>
     </div>
@@ -127,6 +128,6 @@
 </dialog>
 <script src="vendor/leaflet/leaflet.js"></script>
 <script src="config.js?v=13"></script>
-<script src="app.js?v=38"></script>
+<script src="app.js?v=39"></script>
 </body>
 </html>
