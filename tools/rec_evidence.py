@@ -4,17 +4,18 @@ Writes data/rec_evidence.json: {index: {"osm": [...], "wiki": [...]}}
          (natural=hot_spring, amenity=public_bath, leisure=bathing_place, and pools/resorts/tourism named like a spring)
   wiki - English Wikipedia articles within 1.5 km: [title, distance_m, soaking keywords found in the intro]
 OpenStreetMap data (c) OpenStreetMap contributors, ODbL."""
-import json, math, re, time, urllib.parse, urllib.request
+import json, math, re, sys, time, urllib.parse, urllib.request
+sys.stdout.reconfigure(line_buffering=True)
 from collections import defaultdict
 UA = {'User-Agent': 'wildflower-touring-hotsprings/1.0 (https://hydrotylerking.github.io/hotsprings/)'}
-def fetch(url, data=None, tries=4):
+def fetch(url, data=None, tries=3, timeout=120):
     for t in range(tries):
         try:
             req = urllib.request.Request(url, data=data, headers=UA)
-            with urllib.request.urlopen(req, timeout=900) as r: return json.load(r)
+            with urllib.request.urlopen(req, timeout=timeout) as r: return json.load(r)
         except Exception as e:
             if t == tries - 1: raise
-            time.sleep(15 * (t + 1))
+            time.sleep(5 * (t + 1))
 def km(a, b, c, d):
     t = math.pi / 180; x = (c - a) * t; y = (d - b) * t
     h = math.sin(x / 2) ** 2 + math.cos(a * t) * math.cos(c * t) * math.sin(y / 2) ** 2
@@ -25,21 +26,27 @@ H = [(i, r) for i, r in enumerate(S) if r[4] is not None and r[4] >= 90]
 print('springs >= 90F:', len(H))
 
 # ---- OpenStreetMap via Overpass (US, Alaska, Hawaii, Puerto Rico)
-Q = '''[out:json][timeout:900];
-(area["ISO3166-1"="US"][admin_level=2]; area["ISO3166-1"="PR"][admin_level=2];)->.us;
-( nwr["natural"="hot_spring"](area.us);
-  nwr["amenity"="public_bath"](area.us);
-  nwr["leisure"="bathing_place"](area.us);
-  nwr["leisure"~"^(swimming_pool|water_park|resort|sports_centre)$"]["name"~"spring|thermal|plunge|bath|hot pool|natatorium",i](area.us);
-  nwr["tourism"]["name"~"hot spring|warm spring|thermal",i](area.us);
-  nwr["amenity"="spa"]["name"~"spring|thermal|bath",i](area.us);
-);
-out center tags;'''
-osm = []
-for ep in ('https://overpass-api.de/api/interpreter', 'https://overpass.kumi.systems/api/interpreter'):
-    try:
-        j = fetch(ep, data=urllib.parse.urlencode({'data': Q}).encode()); osm = j['elements']; break
-    except Exception as e: print('overpass', ep, 'failed:', e)
+BODY = '''( nwr["natural"="hot_spring"]({b});
+  nwr["amenity"="public_bath"]({b});
+  nwr["leisure"="bathing_place"]({b});
+  nwr["leisure"~"^(swimming_pool|water_park|resort|sports_centre)$"]["name"~"spring|thermal|plunge|bath|hot pool|natatorium",i]({b});
+  nwr["tourism"]["name"~"hot spring|warm spring|thermal",i]({b});
+  nwr["amenity"="spa"]["name"~"spring|thermal|bath",i]({b});
+);'''
+# Regional boxes (south, west, north, east) instead of one national query, which tends to time out
+BOXES = [(31, -125, 37, -114), (37, -125, 42, -114), (42, -125, 49.5, -114), (31, -114, 37, -103), (37, -114, 42, -103), (42, -114, 49.5, -103),
+         (24, -103, 37, -90), (37, -103, 49.5, -90), (24, -90, 49.5, -66), (51, -180, 72, -129), (18, -161, 23, -154), (17.5, -68, 18.6, -65)]
+EPS = ['https://overpass-api.de/api/interpreter', 'https://overpass.kumi.systems/api/interpreter', 'https://maps.mail.ru/osm/tools/overpass/api/interpreter']
+osm, seen = [], set()
+for bx in BOXES:
+    q = '[out:json][timeout:180];' + BODY.format(b=','.join(map(str, bx))) + 'out center tags;'
+    for k in range(len(EPS)):
+        try:
+            j = fetch(EPS[k], data=urllib.parse.urlencode({'data': q}).encode(), tries=2, timeout=200)
+            for e in j['elements']:
+                if (e['type'], e['id']) not in seen: seen.add((e['type'], e['id'])); osm.append(e)
+            print('box', bx, 'ok via', EPS[k].split('/')[2], len(j['elements'])); break
+        except Exception as e: print('box', bx, EPS[k].split('/')[2], 'failed:', e)
 print('OSM features:', len(osm))
 KEEP = ('natural', 'amenity', 'leisure', 'tourism', 'bathing', 'swimming', 'access', 'fee', 'opening_hours', 'website', 'operator', 'nudism', 'temperature', 'description', 'note', 'hot_spring', 'sport', 'shop', 'drinking_water')
 G = defaultdict(list)
@@ -68,6 +75,7 @@ API = 'https://en.wikipedia.org/w/api.php'
 def wq(p): return fetch(API + '?' + urllib.parse.urlencode(dict({'format': 'json', 'formatversion': 2}, **p)))
 titles = {}
 for n, (i, r) in enumerate(H):
+    if n % 200 == 0: print('wikipedia geosearch', n, '/', len(H))
     try:
         j = wq({'action': 'query', 'list': 'geosearch', 'gscoord': f'{r[2]}|{r[3]}', 'gsradius': 1500, 'gslimit': 8})
         for g in j['query']['geosearch']:
