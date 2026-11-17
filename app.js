@@ -151,13 +151,13 @@
   // Wikipedia article / Commons photo matched to each spring (data/media.json); text and credits load live
   let MEDIA = {};
   const mediaReady = fetch('data/media.json?v=2').then(r => r.ok ? r.json() : {m:{}}).then(j => { MEDIA = j.m || {}; }).catch(() => {});
-  const recReady = fetch('data/recreation.json?v=2').then(r => r.ok ? r.json() : {}).then(j => { REC = j.r || {}; }).catch(() => {});
+  const recReady = fetch('data/recreation.json?v=3').then(r => r.ok ? r.json() : {}).then(j => { REC = j.r || {}; }).catch(() => {});
   Promise.all([fetch('data/springs.json?v=7').then(r => r.json()), mediaReady, recReady]).then(([j]) => init(j)).catch(err => {
     alertMsg('Could not load spring data (' + err + ').');
   });
 
   let SS_SRC = [], REC = {};
-  const REC_LABEL = {D:'Developed soaking', W:'Popular wild soak', P:'Possibly used', N:'Unlikely or not allowed', U:'No evidence found'};
+  const REC_LABEL = {D:'Known soaking spot · commercial', W:'Known soaking spot · wild', P:'Possibly used', N:'Unlikely or not allowed', U:'No evidence found'};
   const recKey = d => d.lat.toFixed(3) + ',' + d.lon.toFixed(3);
   function init(json) {
     S = json.springs.map((r, i) => ({i, name:r[0] || 'Unnamed spring', unnamed:!r[0], st:r[1], lat:r[2], lon:r[3], f:r[4], c:r[5], cls:r[6], quad:(r[7] || '').replace(/^\(|\)$/g, ''), land:r[8] || null, ss:r[9] || null, moved:r[10] || null, added:r[11] === 'S'}));

@@ -69,9 +69,9 @@ Marker locations are only ever moved using state geological survey records.
 
 ## Soaking estimate
 
-For springs at or above 90 °F, `data/recreation.json` (built by `tools/recreation.py`) gives an estimate of recreational use, keyed by `lat,lon` rounded to 3 decimals: **D** developed soaking (resort, pool, bathhouse), **W** popular wild soak, **P** possibly used, **N** unlikely or not allowed, **U** no evidence found, each with a one-line reason. Precedence:
+For springs at or above 90 °F, `data/recreation.json` (built by `tools/recreation.py`) gives an estimate of recreational use, keyed by `lat,lon` rounded to 3 decimals: **D** known soaking spot, commercial (resort, pool, bathhouse), **W** known soaking spot, wild (undeveloped pools people use), **P** possibly used, **N** unlikely or not allowed, **U** no evidence found, each with a one-line reason. Precedence:
 
-1. Hand judgements in `tools/rec_judgement.py` (about 400 springs: well-known resorts and wild soaks, closed or private former resorts, power plants, volcanic vents).
+1. Hand judgements in `tools/rec_judgement.py` (about 460 springs, from two review passes; the second matched famous soaks listed under generic names, such as Deep Creek, Sykes and the Long Valley tubs, by location: well-known resorts and wild soaks, closed or private former resorts, power plants, volcanic vents).
 2. Rules: thermal areas in parks where soaking is banned (Yellowstone, Lassen, Mount Rainier, Valles Caldera, Ash Meadows and others) and military land are **N**.
 3. OpenStreetMap evidence from `tools/rec_evidence.py` (public baths, pools and bathing spots within 400 m). The public Overpass servers refused most requests from GitHub's runners, so this currently contributes little.
 4. Fallbacks: scalding (160 °F+) with no evidence of pools is **N**; warm springs on public land are **P**; the rest **U**.

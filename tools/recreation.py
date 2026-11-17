@@ -2,7 +2,7 @@
 Order of precedence: hand judgements (tools/rec_judgement.py) > fixed rules (no-soaking parks, military land) >
 web evidence in data/rec_evidence.json (OpenStreetMap, Wikipedia) > temperature/land fallbacks.
 Keyed by "lat,lon" rounded to 3 decimals so it survives reordering of data/springs.json.
-Codes: D developed soaking, W popular wild soak, P possibly used, N unlikely or not allowed, U no evidence found."""
+Codes: D known soaking spot, commercial; W known soaking spot, wild; P possibly used, N unlikely or not allowed, U no evidence found."""
 import json, os, re, sys
 sys.path.insert(0, os.path.dirname(__file__))
 from rec_judgement import J
@@ -11,7 +11,12 @@ E = json.load(open('data/rec_evidence.json')) if os.path.exists('data/rec_eviden
 NOPARK = re.compile(r"Yellowstone National Park|Lassen Volcanic|Hawai.i Volcanoes|Mount Rainier National Park|Wind Cave|Mammoth Cave|Valles Caldera|Craters of the Moon|Ash Meadows")
 DEV_KIND = {'public_bath', 'swimming_pool', 'water_park', 'resort', 'spa', 'sports_centre', 'hotel', 'guest_house', 'camp_site'}
 out, why_src = {}, {}
-def put(r, code, why, src): out[f'{r[2]:.3f},{r[3]:.3f}'] = [code, why]; why_src[src] = why_src.get(src, 0) + 1
+RANK = {'hand': 0, 'rule': 1, 'osm': 2, 'fallback': 3}
+basis = {}
+def put(r, code, why, src):
+    k = f'{r[2]:.3f},{r[3]:.3f}'
+    if k in basis and RANK[basis[k]] <= RANK[src]: return          # two records at one spot: the better-founded call wins
+    out[k] = [code, why]; basis[k] = src; why_src[src] = why_src.get(src, 0) + 1
 for i, r in enumerate(S):
     if r[4] is None or r[4] < 90: continue
     if i in J:
@@ -40,7 +45,7 @@ for i, r in enumerate(S):
     if land and land[0] in ('P', 'R', 'U'): put(r, 'P', 'Warm and on public land, but no sign of regular use was found', 'fallback'); continue
     put(r, 'U', 'No sign of soaking found; may be on private land', 'fallback')
 json.dump({'note': 'Estimate of recreational soaking for springs at or above 90 F. Hand judgements plus OpenStreetMap (ODbL, (c) OpenStreetMap contributors) and Wikipedia evidence. Always check access and conditions.',
-           'codes': {'D': 'Developed soaking', 'W': 'Popular wild soak', 'P': 'Possibly used', 'N': 'Unlikely or not allowed', 'U': 'No evidence found'},
+           'codes': {'D': 'Known soaking spot: commercial (resort, pool, bathhouse)', 'W': 'Known soaking spot: wild (undeveloped)', 'P': 'Possibly used', 'N': 'Unlikely or not allowed', 'U': 'No evidence found'},
            'r': out}, open('data/recreation.json', 'w'), separators=(',', ':'), ensure_ascii=False)
 from collections import Counter
 print(len(out), 'springs;', Counter(v[0] for v in out.values()), '| by basis:', why_src)
