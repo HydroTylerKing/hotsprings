@@ -159,6 +159,16 @@
   let SS_SRC = [], REC = {};
   const REC_LABEL = {D:'Known soaking spot · commercial', W:'Known soaking spot · wild', P:'Possibly used', N:'Unlikely or not allowed', U:'No evidence found'};
   const recKey = d => d.lat.toFixed(3) + ',' + d.lon.toFixed(3);
+  // Known soaking spots get a symbol: a house for commercial, the hot-spring sign for wild.
+  const GLYPH = {
+    D:'<path d="M12 5.2 5.6 10.6h1.9v7.2h3.6v-4.4h1.8v4.4h3.6v-7.2h1.9z" fill="#fff"/>',
+    W:'<g fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round"><path d="M5.8 13.6c1.2 3.6 11.2 3.6 12.4 0"/><path d="M9 12c-1-1.3 1-2.4 0-3.7s1-2.4 0-3.4"/><path d="M12 12c-1-1.3 1-2.4 0-3.7s1-2.4 0-3.4"/><path d="M15 12c-1-1.3 1-2.4 0-3.7s1-2.4 0-3.4"/></g>'
+  };
+  const soakSvg = (k, fill, stroke, sw) => '<svg viewBox="0 0 24 24" width="100%" height="100%"><circle cx="12" cy="12" r="' + (11.2 - sw / 2) + '" fill="' + fill + '" stroke="' + stroke + '" stroke-width="' + sw + '"/>' + GLYPH[k] + '</svg>';
+  function soakIcon(d, r, stroke, sw) {
+    const px = Math.round(2 * r + 9);
+    return L.divIcon({className:'soakic', html:soakSvg(d.rec[0], COLORS[d.cls] || '#777', stroke, sw), iconSize:[px, px], iconAnchor:[px / 2, px / 2]});
+  }
   function init(json) {
     S = json.springs.map((r, i) => ({i, name:r[0] || 'Unnamed spring', unnamed:!r[0], st:r[1], lat:r[2], lon:r[3], f:r[4], c:r[5], cls:r[6], quad:(r[7] || '').replace(/^\(|\)$/g, ''), land:r[8] || null, ss:r[9] || null, moved:r[10] || null, added:r[11] === 'S'}));
     SS_SRC = json.ss_sources || [];
@@ -168,7 +178,8 @@
     // markers (hotter drawn on top)
     S.forEach(d => { d.known = !!(d.rec && (d.rec[0] === 'D' || d.rec[0] === 'W')); });
     S.slice().sort((a, b) => (a.known - b.known) || (ORDER[a.cls] - ORDER[b.cls])).forEach(d => {   // known soaking spots on top
-      d.m = L.circleMarker([d.lat, d.lon], {renderer, radius:5, weight:1, color:'#000', opacity:.55, fillColor:COLORS[d.cls], fillOpacity:.95});
+      d.m = d.known ? L.marker([d.lat, d.lon], {icon:soakIcon(d, 5, '#000', 1), keyboard:false, riseOnHover:true})
+                    : L.circleMarker([d.lat, d.lon], {renderer, radius:5, weight:1, color:'#000', opacity:.55, fillColor:COLORS[d.cls], fillOpacity:.95});
       if (canHover) d.m.bindTooltip(() => esc(title(d.name)) + ' · ' + fmt(d), {direction:'top', offset:[0,-4]});
       d.m.on('click', () => select(d, false));
     });
@@ -187,7 +198,7 @@
     const z = map.getZoom(), r = z < 5 ? 4 : z < 7 ? 5 : z < 10 ? 6.5 : 8;
     const dk = curBM && (curBM.dark || curBM.imagery);
     // Known soaking spots (commercial or wild) are solid; everything else is about half transparent.
-    S.forEach(d => d.m.setStyle(d === sel ? {radius:r + 3, weight:3, color:'#00a3ff', opacity:1, fillOpacity:1} : saved.has(d.i) ? {radius:r + 1, weight:2.5, color:'#be6b47', opacity:1, fillOpacity:d.known ? 1 : .5} : {radius:r, weight:1, color:dk ? '#fff' : '#000', opacity:d.known ? (dk ? .9 : .7) : (dk ? .4 : .25), fillOpacity:d.known ? 1 : .5}));
+    S.forEach(d => d.known ? d.m.setIcon(soakIcon(d, d === sel ? r + 2 : r, d === sel ? '#00a3ff' : saved.has(d.i) ? '#be6b47' : dk ? '#fff' : 'rgba(0,0,0,.75)', d === sel || saved.has(d.i) ? 2.6 : 1.2)).setZIndexOffset(d === sel ? 1000 : 0) : d.m.setStyle(d === sel ? {radius:r + 3, weight:3, color:'#00a3ff', opacity:1, fillOpacity:1} : saved.has(d.i) ? {radius:r + 1, weight:2.5, color:'#be6b47', opacity:1, fillOpacity:d.known ? 1 : .5} : {radius:r, weight:1, color:dk ? '#fff' : '#000', opacity:d.known ? (dk ? .9 : .7) : (dk ? .4 : .25), fillOpacity:d.known ? 1 : .5}));
   }
   map.on('zoomend', restyle);
   map.on('baselayerchange', restyle);
@@ -218,7 +229,7 @@
       if (ok) { if (!map.hasLayer(d.m)) d.m.addTo(map); } else if (map.hasLayer(d.m)) map.removeLayer(d.m);
       if (ok && (!inView || inView.contains([d.lat, d.lon]))) visible.push(d);
     });
-    if (sel && map.hasLayer(sel.m)) sel.m.bringToFront();
+    if (sel && map.hasLayer(sel.m) && sel.m.bringToFront) sel.m.bringToFront();
     const s = sortSel.value, tv = d => d.f == null ? ({B:212, H:150, W:90, C:55}[d.cls] ?? -1) : d.f;
     const clean = n => n.replace(/^\W+/, '');
     if (s === 'near' && me) visible.forEach(d => d.dist = distMi(d));
@@ -265,7 +276,7 @@
     return '<div class="pop"><a target="_blank" rel="noopener" title="Open in Google Maps" href="' + gmaps(d) + '">' + PIN + esc(title(d.name)) + '</a><div class="t">Temperature: <b>' + tempLong(d).replace(' (no reading listed)', '') + '</b></div></div>';
   }
   function select(d, fly) {
-    sel = d; restyle(); if (map.hasLayer(d.m)) d.m.bringToFront();
+    sel = d; restyle(); if (map.hasLayer(d.m) && d.m.bringToFront) d.m.bringToFront();
     list.querySelectorAll('.it').forEach(el => el.classList.toggle('sel', +el.dataset.i === d.i));
     const det = $('detail'); det.style.display = 'block';
     const lat = Math.abs(d.lat).toFixed(3) + '°' + (d.lat >= 0 ? 'N' : 'S'), lon = Math.abs(d.lon).toFixed(3) + '°' + (d.lon < 0 ? 'W' : 'E');
