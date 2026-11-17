@@ -38,7 +38,9 @@ BOXES = sorted({(math.floor(r[2] / 3) * 3, math.floor(r[3] / 3) * 3) for _, r in
 BOXES = [(la, lo, la + 3, lo + 3) for la, lo in BOXES]
 EPS = ['https://maps.mail.ru/osm/tools/overpass/api/interpreter', 'https://overpass-api.de/api/interpreter', 'https://overpass.kumi.systems/api/interpreter']
 osm, seen, failed = [], set(), []
+T0 = time.time()
 for bx in BOXES:
+    if time.time() - T0 > 1800: failed.append(bx); continue          # 30-minute budget for map queries
     q = '[out:json][timeout:120];' + BODY.format(b=','.join(map(str, bx))) + 'out center tags;'
     ok = False
     for ep in EPS:
