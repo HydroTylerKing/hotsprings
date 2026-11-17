@@ -114,7 +114,9 @@ try:
     for s in site.values():
         at = s['at']; nm = at.get('NAME') or ''
         if re.fullmatch(r'(?i)(spring|unnamed( spring)?|well|)', nm.strip()): nm = 'Unnamed spring'
-        src = 'Nevada Bureau of Mines and Geology geothermal database' + (' (' + at['REFERENCE'].strip() + ')' if (at.get('REFERENCE') or '').strip() else '')
+        ref = (at.get('REFERENCE') or '').strip()
+        src = 'Nevada Bureau of Mines and Geology geothermal database' + (' (' + ref + ')' if ref and not re.fullmatch(r'(?i)this study|unknown|n/?a|none|-+', ref) else '')
+        nm = re.sub(r'\bSp(r|g|gs)?\.?(?=\s|$)', lambda m: 'Springs' if (m.group(1) or '') == 'gs' else 'Spring', nm, flags=re.I)
         A.append(rec('nbmg', nm, at.get('STATE'), round(s['g']['y'], 5), round(s['g']['x'], 5), s['t'], s['yr'], src))
     counts['nbmg'] = len(site)
 except Exception as e:

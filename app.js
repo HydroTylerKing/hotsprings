@@ -151,7 +151,7 @@
   // Wikipedia article / Commons photo matched to each spring (data/media.json); text and credits load live
   let MEDIA = {};
   const mediaReady = fetch('data/media.json?v=2').then(r => r.ok ? r.json() : {m:{}}).then(j => { MEDIA = j.m || {}; }).catch(() => {});
-  Promise.all([fetch('data/springs.json?v=6').then(r => r.json()), mediaReady]).then(([j]) => init(j)).catch(err => {
+  Promise.all([fetch('data/springs.json?v=7').then(r => r.json()), mediaReady]).then(([j]) => init(j)).catch(err => {
     alertMsg('Could not load spring data (' + err + ').');
   });
 
@@ -265,7 +265,7 @@
       '<div class="mybtns"><button class="mybtn sav' + (saved.has(d.i) ? ' on' : '') + '">' + (saved.has(d.i) ? '★ Saved' : '☆ Save') + '</button><button class="mybtn vis' + (visited.has(d.i) ? ' on' : '') + '">' + (visited.has(d.i) ? '✓ Visited' : 'Mark visited') + '</button></div><table>' +
       '<tr><td>State</td><td>' + NAMES[d.st] + '</td></tr>' +
       '<tr><td>Temperature</td><td>' + tempLong(d) + (d.ss && (d.added || d.noaaNoTemp) ? ' <span class="srcnote">(' + (d.ss[2] ? 'measured ' + d.ss[2] : 'date not recorded') + ')</span>' : d.f != null && !d.added ? ' <span class="srcnote">(NOAA 1980)</span>' : '') + '</td></tr>' +
-      (d.ss && !d.added && !d.noaaNoTemp ? '<tr><td>Newer reading</td><td>' + (unit === 'F' ? d.ss[0] + '°F' : d.ss[1] + '°C') + (d.ss[2] ? ', measured ' + d.ss[2] : ', date not recorded') + '</td></tr>' : '') +
+      (d.ss && !d.added && !d.noaaNoTemp ? '<tr><td>' + (d.ss[2] && d.ss[2] > 1980 ? 'Newer reading' : 'Other reading') + '</td><td>' + (unit === 'F' ? d.ss[0] + '°F' : d.ss[1] + '°C') + (d.ss[2] ? ', measured ' + d.ss[2] : ', date not recorded') + '</td></tr>' : '') +
       '<tr><td>Class</td><td><span class="dot" style="background:' + COLORS[d.cls] + ';vertical-align:-1px"></span> ' + LABEL[d.cls] + '</td></tr>' +
       '<tr><td>Latitude, longitude</td><td>' + lat + ', ' + lon + '</td></tr>' +
       '<tr><td>Land</td><td>' + (d.land ? esc(d.land[2]) + (MGR[d.land[1]] && !d.land[2].includes(MGR[d.land[1]]) ? ' <span style="color:var(--muted)">(' + MGR[d.land[1]] + ')</span>' : '') + '<br><span class="landtag ' + LANDCAT[d.land[0]][1] + '" style="margin-left:0">' + LANDCAT[d.land[0]][0] + '</span>' : '<span class="landtag no" style="margin-left:0">Private or unmapped</span>') + '</td></tr>' +
