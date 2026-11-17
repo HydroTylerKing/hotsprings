@@ -452,3 +452,4 @@ j(1503, 'Kennedy', 'P', 'Wilderness spring, partly buried by a 2003 debris flow'
 # Wyoming
 j(1530, 'Alcova', 'W', 'Popular soak at Alcova Reservoir')
 j(1550, 'De Maris', 'N', 'Private')
+j(760, 'Warm Springs', 'D', 'The Springs, Idaho City: hot spring pools and spa')
