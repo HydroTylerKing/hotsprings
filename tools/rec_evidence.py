@@ -33,20 +33,23 @@ BODY = '''( nwr["natural"="hot_spring"]({b});
   nwr["tourism"]["name"~"hot spring|warm spring|thermal",i]({b});
   nwr["amenity"="spa"]["name"~"spring|thermal|bath",i]({b});
 );'''
-# Regional boxes (south, west, north, east) instead of one national query, which tends to time out
-BOXES = [(31, -125, 37, -114), (37, -125, 42, -114), (42, -125, 49.5, -114), (31, -114, 37, -103), (37, -114, 42, -103), (42, -114, 49.5, -103),
-         (24, -103, 37, -90), (37, -103, 49.5, -90), (24, -90, 49.5, -66), (51, -180, 72, -129), (18, -161, 23, -154), (17.5, -68, 18.6, -65)]
-EPS = ['https://overpass-api.de/api/interpreter', 'https://overpass.kumi.systems/api/interpreter', 'https://maps.mail.ru/osm/tools/overpass/api/interpreter']
-osm, seen = [], set()
+# Small 3-degree boxes around the springs themselves (big regional queries time out on the public servers)
+BOXES = sorted({(math.floor(r[2] / 3) * 3, math.floor(r[3] / 3) * 3) for _, r in H})
+BOXES = [(la, lo, la + 3, lo + 3) for la, lo in BOXES]
+EPS = ['https://maps.mail.ru/osm/tools/overpass/api/interpreter', 'https://overpass-api.de/api/interpreter', 'https://overpass.kumi.systems/api/interpreter']
+osm, seen, failed = [], set(), []
 for bx in BOXES:
-    q = '[out:json][timeout:180];' + BODY.format(b=','.join(map(str, bx))) + 'out center tags;'
-    for k in range(len(EPS)):
+    q = '[out:json][timeout:120];' + BODY.format(b=','.join(map(str, bx))) + 'out center tags;'
+    ok = False
+    for ep in EPS:
         try:
-            j = fetch(EPS[k], data=urllib.parse.urlencode({'data': q}).encode(), tries=2, timeout=200)
+            j = fetch(ep, data=urllib.parse.urlencode({'data': q}).encode(), tries=1, timeout=150)
             for e in j['elements']:
                 if (e['type'], e['id']) not in seen: seen.add((e['type'], e['id'])); osm.append(e)
-            print('box', bx, 'ok via', EPS[k].split('/')[2], len(j['elements'])); break
-        except Exception as e: print('box', bx, EPS[k].split('/')[2], 'failed:', e)
+            print('box', bx, 'ok via', ep.split('/')[2], len(j['elements'])); ok = True; break
+        except Exception as e: print('box', bx, ep.split('/')[2], 'failed:', e)
+    if not ok: failed.append(bx)
+print('boxes:', len(BOXES), '| failed:', failed)
 print('OSM features:', len(osm))
 KEEP = ('natural', 'amenity', 'leisure', 'tourism', 'bathing', 'swimming', 'access', 'fee', 'opening_hours', 'website', 'operator', 'nudism', 'temperature', 'description', 'note', 'hot_spring', 'sport', 'shop', 'drinking_water')
 G = defaultdict(list)
@@ -72,7 +75,7 @@ for i, r in H:
 # ---- Wikipedia articles near each spring
 KW = re.compile(r'\b(soak\w*|bath\w*|swim\w*|pool\w*|resort|spa\b|tub\w*|clothing.optional|nud\w*|recreation\w*|visitors?|camp\w*|lodge|hike|trail|plunge|developed|commercial|popular|closed|private|no public|off.limits|scald\w*|dangerous|prohibit\w*)', re.I)
 API = 'https://en.wikipedia.org/w/api.php'
-def wq(p): return fetch(API + '?' + urllib.parse.urlencode(dict({'format': 'json', 'formatversion': 2}, **p)))
+def wq(p): return fetch(API + '?' + urllib.parse.urlencode(dict({'format': 'json', 'formatversion': 2}, **p)), tries=3, timeout=30)
 titles = {}
 for n, (i, r) in enumerate(H):
     if n % 200 == 0: print('wikipedia geosearch', n, '/', len(H))
