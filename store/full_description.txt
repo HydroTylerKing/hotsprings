@@ -1,0 +1,36 @@
+Not a government app: Wildflower Touring is an independent app. It is not affiliated with, endorsed by, or acting for NOAA, the U.S. Geological Survey (USGS), the EPA, the National Park Service, or any federal, state, or tribal agency. It uses publicly released government data; the official sources are linked at the end of this description and on the app's About page.
+
+Find hot springs across the United States on one fast, simple map. Hot Springs Map: Wildflower Touring shows about 6,000 thermal springs, colored by water temperature from cool through near boiling, so you can plan a soak, a road trip, or a geology outing.
+
+WHAT YOU CAN DO
+• Browse springs on topo, satellite, and street basemaps
+• Filter by state, minimum temperature, land manager, and soaking estimate
+• See known soaking spots at a glance: a house icon for commercial ones (resorts, pools, bathhouses) and a hot-spring icon for wild ones
+• Tap a spring for its temperature, location, land manager, description, and photos, with a one-tap link to directions
+• Sort by distance from you (your location stays on your device)
+• Save springs, mark the ones you have visited, and save map areas for offline use
+
+The soaking estimate is the app's own judgement from public information. Always check access, safety, and current rules before you go: many springs are on private land, some are closed, and some are hot enough to scald.
+
+OFFICIAL DATA SOURCES
+• Spring locations and temperatures: NOAA, Thermal Springs List for the United States (1980), Key to Geophysical Records Documentation No. 12
+https://repository.library.noaa.gov/view/noaa/13426
+https://www.ncei.noaa.gov/node/2320
+• Spring temperature readings: Water Quality Portal (USGS, EPA, and partner agencies)
+https://www.waterqualitydata.us/
+• Named springs: USGS Geographic Names Information System (GNIS)
+https://www.usgs.gov/us-board-on-geographic-names/download-gnis-data
+• Land ownership: USGS Protected Areas Database of the United States (PAD-US)
+https://www.usgs.gov/data/protected-areas-database-united-states-pad-us-4
+• Topographic and imagery basemaps: USGS The National Map
+https://apps.nationalmap.gov/help/HowTo.htm
+• New Mexico springs: New Mexico Bureau of Geology and Mineral Resources, via the U.S. Department of Energy Geothermal Data Repository
+https://www.osti.gov/dataexplorer/biblio/1223849
+• Nevada springs: Nevada Bureau of Mines and Geology geothermal database
+https://data.nbmg.unr.edu/Public/Geothermal/Data/GeothermalData/_metadata/HTML_Files/HotSpringsAndWells.html
+• Other state survey records: state geological surveys via the National Geothermal Data System (AASG-GDS)
+https://doi.org/10.5281/zenodo.8125526
+
+Descriptions and photos come from Wikipedia, Wikimedia Commons, and Google Maps contributors and are credited in the app. Other maps: Esri, OpenTopoMap, and OpenStreetMap contributors.
+
+No ads. No account. The app collects no personal data.
