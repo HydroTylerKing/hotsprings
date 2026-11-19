@@ -1,9 +1,9 @@
-/* Hot Springs Map — offline support
+/* Hotspring Project — offline support
    - App files and spring data are cached so search, filters and details work with no signal.
    - Map tiles you have viewed are kept (up to TILE_MAX) so recently seen areas still draw offline.
    - Wikipedia/Commons text and photos are cached after first view.
    - Google Maps photos are never cached (Google's terms); they simply don't show offline. */
-const VERSION = 'wt-v53';
+const VERSION = 'wt-v54';
 const SHELL = 'shell-' + VERSION;
 const TILES = 'tiles-v2';
 const WIKI = 'wiki-v2';
