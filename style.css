@@ -127,12 +127,13 @@ aside{width:340px;flex:none;background:#fff;border-left:1px solid var(--line);di
 #count{font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)}
 .maxbtn{border:1px solid #a9b0b9;background:#fff;border-radius:3px;font:inherit;font-size:11px;text-transform:none;letter-spacing:0;color:var(--navy);padding:2px 8px;cursor:pointer;margin-left:8px}
 .maxbtn:hover{background:var(--tint)}
-#detail{padding:10px 12px;border-bottom:1px solid var(--line);display:none;background:#fbfaf4;max-height:58vh;overflow:auto;flex:none}
+#detail{padding:0 12px 10px;border-bottom:1px solid var(--line);display:none;background:#fbfaf4;max-height:58vh;overflow:auto;flex:none}
 #detail h2{font-size:15px;margin:0 0 6px;color:var(--navy)}
 #detail table{border-collapse:collapse;width:100%;font-size:12.5px}
 #detail td{padding:2px 0;vertical-align:top}
 #detail td:first-child{color:var(--muted);width:42%}
-#detail .x{border:0;background:none;font-size:16px;cursor:pointer;color:var(--muted);float:right}
+#detail .x{border:0;background:none;font-size:18px;line-height:1;cursor:pointer;color:var(--muted);padding:6px 8px;margin-right:-8px;flex:none;border-radius:6px}
+#detail .x:hover{background:#ebe8dc;color:var(--ink)}
 .gbtn{display:inline-flex;align-items:center;gap:6px;margin-top:8px;padding:7px 12px;background:var(--leaf);color:#fff!important;text-decoration:none;border-radius:4px;font-weight:600;font-size:13px}
 .gbtn:hover{filter:brightness(1.08)}
 #list{overflow:auto;flex:1;min-height:0}
@@ -255,3 +256,15 @@ aside{width:340px;flex:none;background:#fff;border-left:1px solid var(--line);di
 .pb.on{background:#fdf3e7;border-color:#e2b98f;color:#8a4a1c}
 .pb.more{background:var(--navy2);border-color:var(--navy2);color:#fff;margin-left:auto}
 .pb svg{width:13px;height:13px}
+
+/* details: pinned header with the close button */
+#detail .dhead{position:sticky;top:0;z-index:2;display:flex;align-items:center;gap:8px;background:#fbfaf4;margin:0 -12px 6px;padding:8px 12px 6px;border-bottom:1px solid var(--line)}
+#detail .dhead h2{margin:0;flex:1;min-width:0}
+@media (max-width:760px){
+  /* phones: details open as a full-screen sheet over the map */
+  #detail{position:fixed;left:0;right:0;top:calc(50px + env(safe-area-inset-top));bottom:0;z-index:1500;max-height:none;border:0;
+    padding:0 calc(14px + env(safe-area-inset-right)) calc(16px + env(safe-area-inset-bottom)) calc(14px + env(safe-area-inset-left));box-shadow:0 -2px 12px rgba(0,0,0,.15)}
+  #detail .dhead{margin:0 calc(-14px - env(safe-area-inset-right)) 8px calc(-14px - env(safe-area-inset-left));padding:10px calc(14px + env(safe-area-inset-right)) 8px calc(14px + env(safe-area-inset-left))}
+  #detail .dhead h2{font-size:17px}
+  #detail .x{font-size:22px;padding:8px 10px}
+}

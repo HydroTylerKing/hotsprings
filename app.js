@@ -343,6 +343,11 @@
         (d.ss || d.moved ? '<div class="srccite">' + (d.ss ? 'Reading: ' + esc(SS_SRC[d.ss[3]] || '') : '') + (d.moved && (!d.ss || d.moved[2] !== d.ss[3]) ? (d.ss ? '<br>' : '') + 'Location: ' + esc(SS_SRC[d.moved[2]] || '') : '') + (/^(Water Quality Portal|Nevada Bureau|New Mexico Bureau)/.test(SS_SRC[(d.ss || d.moved)[d.ss ? 3 : 2]] || '') ? '' : ' · via the <a href="https://doi.org/10.5281/zenodo.8125526" target="_blank" rel="noopener">National Geothermal Data System</a> (CC BY 4.0)') + '</div>' : '') + '</td></tr>' +
       (dist != null ? '<tr><td>Distance from you</td><td>' + Math.round(dist).toLocaleString() + ' mi (straight line)</td></tr>' : '') +
       '</table><div class="gphoto" id="gphoto" hidden></div>' + (MEDIA[d.i] ? '<div class="about" id="about"><div class="ab-load">Loading description…</div></div>' : '') + '<a class="gbtn" target="_blank" rel="noopener" href="' + gmaps(d) + '">' + PIN + ' Open in Google Maps</a>';
+    // Pinned header (name + close) above a scrolling body, so the panel can be closed from anywhere in it.
+    const head = document.createElement('div'), body = document.createElement('div');
+    head.className = 'dhead'; body.className = 'dbody';
+    while (det.firstChild) body.appendChild(det.firstChild);
+    head.append(body.querySelector('h2'), body.querySelector('.x')); det.append(head, body); det.scrollTop = 0;
     det.querySelector('.mybtn.sav').onclick = () => toggleMine(d, 'sav');
     det.querySelector('.mybtn.vis').onclick = () => toggleMine(d, 'vis');
     if (MEDIA[d.i]) loadAbout(d);
@@ -361,7 +366,7 @@
       const el = p.getElement(); if (!el) return;
       el.querySelector('.pb.sav').onclick = () => toggleMine(d, 'sav');
       el.querySelector('.pb.vis').onclick = () => toggleMine(d, 'vis');
-      el.querySelector('.pb.more').onclick = () => { showDetail(d); const det = $('detail'); if (window.innerWidth <= 760) { map.closePopup(); setTimeout(() => det.scrollIntoView({behavior:'smooth', block:'start'}), 50); } };
+      el.querySelector('.pb.more').onclick = () => showDetail(d);
     };
     if (fly) {
       const z = Math.max(map.getZoom(), 11);
@@ -370,6 +375,7 @@
     } else open();
     setHash('spring-' + d.i);
   }
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && $('detail').style.display === 'block' && !document.querySelector('dialog[open]')) $('detail').querySelector('.x').click(); });
   // Closing a spring's popup (without the full panel open) clears the selection.
   map.on('popupclose', e => { if (sel && e.popup._springI === sel.i && $('detail').style.display !== 'block') deselect(); });
 
