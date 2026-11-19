@@ -1,14 +1,27 @@
 Not a government app: Hotspring Project is an independent app. It is not affiliated with, endorsed by, or acting for NOAA, the U.S. Geological Survey (USGS), the EPA, the National Park Service, or any federal, state, or tribal agency. It uses publicly released government data; the official sources are linked at the end of this description and on the app's About page.
 
-Find hot springs across the United States on one fast, simple map. Hotspring Project shows about 6,000 thermal springs, colored by water temperature from cool through near boiling, so you can plan a soak, a road trip, or a geology outing.
+Find a hot spring for your next soak, road trip, or geology outing. Hotspring Project maps about 6,000 thermal springs across the United States, each colored by water temperature on a smooth scale from cool blue to near-boiling red.
 
-WHAT YOU CAN DO
-• Browse springs on topo, satellite, and street basemaps
-• Filter by state, minimum temperature, land manager, and soaking estimate
-• See known soaking spots at a glance: a house icon for commercial ones (resorts, pools, bathhouses) and a hot-spring icon for wild ones
-• Tap a spring for its temperature, location, land manager, description, and photos, with a one-tap link to directions
-• Sort by distance from you (your location stays on your device)
-• Save springs, mark the ones you have visited, and save map areas for offline use
+FIND A PLACE TO SOAK
+• Known soaking spots stand out: a house icon for commercial ones (resorts, pools, bathhouses) and a hot-spring icon for wild ones
+• Filter to commercial spots, wild spots, or both
+
+EVERYTHING ABOUT A SPRING
+• Tap any spring for its temperature, newer readings where available, location, land manager, description, and photos
+• One tap opens directions
+
+SORT AND FILTER EVERY SPRING
+• Search by name, or filter by state, land ownership, and soaking estimate
+• Set a minimum temperature anywhere from 80°F to 212°F
+• Sort hottest, coolest, or nearest to you (your location stays on your device)
+• Expand the results into a full table
+
+MAPS FOR EVERY TRIP
+• Topo, satellite, shaded relief, and street basemaps
+• Save map areas to use offline where there's no signal
+• Turn on about 33,000 more named springs from USGS place names
+• Save springs and mark the ones you've visited
+• Works on phones, tablets, and computers, in °F or °C
 
 The soaking estimate is the app's own judgement from public information. Always check access, safety, and current rules before you go: many springs are on private land, some are closed, and some are hot enough to scald.
 
