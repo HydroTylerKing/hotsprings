@@ -7,7 +7,7 @@ OpenStreetMap data (c) OpenStreetMap contributors, ODbL."""
 import json, math, re, sys, time, urllib.parse, urllib.request
 sys.stdout.reconfigure(line_buffering=True)
 from collections import defaultdict
-UA = {'User-Agent': 'wildflower-touring-hotsprings/1.0 (https://hydrotylerking.github.io/hotsprings/)'}
+UA = {'User-Agent': 'hotsprings-map/1.0 (https://hydrotylerking.github.io/hotsprings/)'}
 def fetch(url, data=None, tries=3, timeout=120):
     for t in range(tries):
         try:

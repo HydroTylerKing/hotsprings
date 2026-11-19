@@ -1,4 +1,4 @@
-/* Wildflower Touring — Hot Springs Map
+/* Hot Springs Map
    Data: NOAA Thermal Springs List for the United States (KGRD No. 12, 1980). */
 (function () {
   'use strict';

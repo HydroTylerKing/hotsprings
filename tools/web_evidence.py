@@ -6,7 +6,7 @@
 Google results are stored only as minimal facts for classification (no photos, reviews or text)."""
 import asyncio, json, re, sys, urllib.parse, urllib.request
 sys.stdout.reconfigure(line_buffering=True)
-UA = {'User-Agent': 'wildflower-touring-hotsprings/1.0 (https://hydrotylerking.github.io/hotsprings/)'}
+UA = {'User-Agent': 'hotsprings-map/1.0 (https://hydrotylerking.github.io/hotsprings/)'}
 
 # ---- 1. Wikipedia list
 def wget(url):

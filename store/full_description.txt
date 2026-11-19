@@ -1,6 +1,6 @@
-Not a government app: Wildflower Touring is an independent app. It is not affiliated with, endorsed by, or acting for NOAA, the U.S. Geological Survey (USGS), the EPA, the National Park Service, or any federal, state, or tribal agency. It uses publicly released government data; the official sources are linked at the end of this description and on the app's About page.
+Not a government app: Hot Springs Map is an independent app. It is not affiliated with, endorsed by, or acting for NOAA, the U.S. Geological Survey (USGS), the EPA, the National Park Service, or any federal, state, or tribal agency. It uses publicly released government data; the official sources are linked at the end of this description and on the app's About page.
 
-Find hot springs across the United States on one fast, simple map. Hot Springs Map: Wildflower Touring shows about 6,000 thermal springs, colored by water temperature from cool through near boiling, so you can plan a soak, a road trip, or a geology outing.
+Find hot springs across the United States on one fast, simple map. Hot Springs Map shows about 6,000 thermal springs, colored by water temperature from cool through near boiling, so you can plan a soak, a road trip, or a geology outing.
 
 WHAT YOU CAN DO
 • Browse springs on topo, satellite, and street basemaps

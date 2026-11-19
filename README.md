@@ -1,4 +1,4 @@
-# Wildflower Touring · Hot Springs Map
+# Hot Springs Map
 
 An interactive map of US springs: the 1,661 thermal springs of NOAA's 1980 list (the data behind NOAA's retired NGDC hot springs viewer), thousands more from state geological surveys, the Nevada and New Mexico geological surveys and the Water Quality Portal, and an optional layer of about 33,000 named springs from USGS place names.
 

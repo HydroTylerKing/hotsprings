@@ -22,7 +22,7 @@ def near(g, lat, lon):
     for i in (a - 1, a, a + 1):
         for j in (b - 1, b, b + 1): yield from g.get((i, j), ())
 
-with urllib.request.urlopen(urllib.request.Request(URL, headers={'User-Agent': 'wildflower-touring-hotsprings'}), timeout=600) as r:
+with urllib.request.urlopen(urllib.request.Request(URL, headers={'User-Agent': 'hotsprings-map'}), timeout=600) as r:
     z = zipfile.ZipFile(io.BytesIO(r.read()))
 name = [n for n in z.namelist() if n.lower().endswith('.txt')][0]
 G = []

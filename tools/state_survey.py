@@ -19,7 +19,7 @@ def get(url, params, tries=4):
     q = url + '?' + urllib.parse.urlencode(params)
     for t in range(tries):
         try:
-            with urllib.request.urlopen(urllib.request.Request(q, headers={'User-Agent': 'wildflower-touring-hotsprings'}), timeout=60) as r:
+            with urllib.request.urlopen(urllib.request.Request(q, headers={'User-Agent': 'hotsprings-map'}), timeout=60) as r:
                 j = json.load(r)
             if 'error' in j: raise RuntimeError(j['error'])
             return j
@@ -128,7 +128,7 @@ try:
     subprocess.run([sys.executable, '-m', 'pip', 'install', '-q', 'xlrd', 'pyproj'], check=True)
     import xlrd
     from pyproj import Transformer
-    with urllib.request.urlopen(urllib.request.Request('https://gdr.openei.org/files/558/NewMexicoSpgs_Over_30C_AMP.xls', headers={'User-Agent': 'wildflower-touring-hotsprings'}), timeout=120) as r:
+    with urllib.request.urlopen(urllib.request.Request('https://gdr.openei.org/files/558/NewMexicoSpgs_Over_30C_AMP.xls', headers={'User-Agent': 'hotsprings-map'}), timeout=120) as r:
         sh = xlrd.open_workbook(file_contents=r.read()).sheet_by_index(0)
     hdr = sh.row_values(0); ix = {h: i for i, h in enumerate(hdr)}
     tz = {z: Transformer.from_crs(f'EPSG:269{z}', 'EPSG:4326', always_xy=True) for z in (12, 13)}
@@ -158,7 +158,7 @@ def wqp(kind, st, extra):
     p = dict({'statecode': 'US:' + st, 'siteType': 'Spring', 'characteristicName': 'Temperature, water', 'mimeType': 'csv', 'zip': 'yes'}, **extra)
     for t in range(3):
         try:
-            with urllib.request.urlopen(urllib.request.Request(WQP + kind + '/search?' + urllib.parse.urlencode(p), headers={'User-Agent': 'wildflower-touring-hotsprings'}), timeout=900) as r:
+            with urllib.request.urlopen(urllib.request.Request(WQP + kind + '/search?' + urllib.parse.urlencode(p), headers={'User-Agent': 'hotsprings-map'}), timeout=900) as r:
                 b = r.read()
             if not b: return []
             z = zipfile.ZipFile(io.BytesIO(b))
