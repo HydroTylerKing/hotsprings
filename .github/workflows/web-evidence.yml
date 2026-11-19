@@ -1,8 +1,7 @@
 name: Soaking evidence (Wikipedia list + Google Places)
+# Manual only: this job makes paid Google Places requests, so it must never run on its own.
 on:
   workflow_dispatch:
-  push:
-    paths: ['tools/web_evidence.py', '.github/workflows/web-evidence.yml']
 permissions:
   contents: write
 jobs:
