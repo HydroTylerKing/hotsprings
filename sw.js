@@ -3,7 +3,7 @@
    - Map tiles you have viewed are kept (up to TILE_MAX) so recently seen areas still draw offline.
    - Wikipedia/Commons text and photos are cached after first view.
    - Google Maps photos are never cached (Google's terms); they simply don't show offline. */
-const VERSION = 'wt-v54';
+const VERSION = 'wt-v55';
 const SHELL = 'shell-' + VERSION;
 const TILES = 'tiles-v2';
 const WIKI = 'wiki-v2';
@@ -15,8 +15,8 @@ const PRECACHE = [
   './', 'index.html', 'privacy.html', 'style.css', 'app.js', 'config.js', 'manifest.webmanifest',
   'data/springs.json', 'data/media.json',
   'vendor/leaflet/leaflet.js', 'vendor/leaflet/leaflet.css',
-  'assets/logo-96.png?v=3', 'assets/logo-192.png?v=3', 'assets/logo-512.png?v=3', 'assets/favicon-32.png?v=3',
-  'assets/apple-touch-180.png?v=3', 'assets/icon-512.png?v=3', 'assets/icon-maskable-192.png?v=3', 'assets/icon-maskable-512.png?v=3'
+  'assets/logo-96.png?v=4', 'assets/logo-192.png?v=4', 'assets/logo-512.png?v=4', 'assets/favicon-32.png?v=4',
+  'assets/apple-touch-180.png?v=4', 'assets/icon-512.png?v=4', 'assets/icon-maskable-192.png?v=4', 'assets/icon-maskable-512.png?v=4'
 ];
 
 const TILE_HOSTS = ['basemap.nationalmap.gov', 'tile.opentopomap.org', 'server.arcgisonline.com', 'tile.openstreetmap.org', 'basemaps.cartocdn.com'];
