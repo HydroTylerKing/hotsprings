@@ -37,7 +37,7 @@ async def shoot(b, name, kind, bm, view, hsh, acts):
     await pg.goto(SITE + '?shot=1' + hsh, wait_until='networkidle')
     await pg.wait_for_timeout(2500)
     if view:
-        await pg.evaluate('([a,b,z]) => window.wtMap.setView([a,b], z, {animate:false})', view)
+        await pg.evaluate('([a,b,z]) => { window.wtMap.setView([a,b], z, {animate:false}); return 0; }', view)
     if 'filters' in acts:
         await pg.evaluate("document.getElementById('fold') && document.getElementById('fold').click()")
     if 'soak' in acts:
