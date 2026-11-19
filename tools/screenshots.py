@@ -15,7 +15,7 @@ SCENES = [
     ('phone-2-soaks', 'phone', 'esritopo', [44.3, -115.3, 8], '', []),
     ('phone-3-detail', 'phone', 'esritopo', None, '#spring-791', []),
     ('phone-4-satellite', 'phone', 'imagery', [44.62, -110.75, 9.5], '', []),
-    ('desktop-1-overview', 'desktop', 'esritopo', [40.5, -112.5, 5.5], '', ['legend', 'filters', 'results']),
+    ('desktop-1-overview', 'desktop', 'esritopo', [40.5, -112.5, 5.5], '', ['legend', 'filters', 'results', 'hottest']),
     ('desktop-2-detail', 'desktop', 'esritopo', None, '#spring-791', ['legend']),
     ('desktop-3-soaks', 'desktop', 'usgstopo', [44.2, -115.4, 8.5], '', ['legend', 'soak', 'results']),
     ('desktop-4-satellite', 'desktop', 'imagery', [44.6, -110.7, 10], '', ['legend']),
@@ -42,6 +42,8 @@ async def shoot(b, name, kind, bm, view, hsh, acts):
         await pg.evaluate("document.getElementById('fold') && document.getElementById('fold').click()")
     if 'soak' in acts:
         await pg.evaluate("(()=>{const s=document.getElementById('soak'); s.value='DW'; s.dispatchEvent(new Event('change'));})()")
+    if 'hottest' in acts:
+        await pg.evaluate("(()=>{const s=document.getElementById('sort'); s.value='hot'; s.dispatchEvent(new Event('change'));})()")
     if 'results' in acts:
         await pg.evaluate("(()=>{const r=document.getElementById('rfold'); if (r && r.getAttribute('aria-expanded')!=='true') r.click();})()")
     await pg.add_style_tag(content='#gphoto{display:none!important}')
