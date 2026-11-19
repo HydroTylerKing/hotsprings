@@ -288,16 +288,43 @@
     if (e.target.closest('a')) return;
     const it = e.target.closest('.it'); if (!it) return;
     if (app.classList.contains('max')) toggleMax(false);
+    if (window.innerWidth <= 760) $('mapwrap').scrollIntoView({behavior:'smooth', block:'start'});
     select(S[+it.dataset.i], true);
   });
 
   // ---------- Selection, popup, detail ----------
+  // The popup is the main info card for a spring; "More" opens the full panel (photos, description, sources).
   function popupHtml(d) {
-    return '<div class="pop"><a target="_blank" rel="noopener" title="Open in Google Maps" href="' + gmaps(d) + '">' + PIN + esc(title(d.name)) + '</a><div class="t">Temperature: <b>' + tempLong(d).replace(' (no reading listed)', '') + '</b></div></div>';
+    const row = (k, v) => '<tr><td>' + k + '</td><td>' + v + '</td></tr>';
+    const newer = d.ss && !d.added && !d.noaaNoTemp && d.ss[2] && d.ss[2] > 1980 ? row('Newer', (unit === 'F' ? d.ss[0] + '°F' : d.ss[1] + '°C') + ', ' + d.ss[2]) : '';
+    const land = d.land ? esc(d.land[2]) + '<br><span class="landtag ' + LANDCAT[d.land[0]][1] + '">' + LANDCAT[d.land[0]][0] + '</span>' : '<span class="landtag no">Private or unmapped</span>';
+    return '<div class="pop pop2"><a class="pt" target="_blank" rel="noopener" title="Open in Google Maps" href="' + gmaps(d) + '">' + esc(title(d.name)) + '</a>' +
+      (d.rec ? '<div><span class="soak soak-' + d.rec[0] + '">' + REC_LABEL[d.rec[0]] + '</span></div>' + (d.rec[1] && (d.rec[0] === 'D' || d.rec[0] === 'W') ? '<div class="srccite">' + esc(d.rec[1]) + '</div>' : '') : '') +
+      '<table class="pt-t">' +
+      row('Temp', '<span class="dot" style="background:' + colorOf(d) + '"></span><b>' + tempLong(d).replace(' (no reading listed)', '') + '</b>' + (d.cls ? ' · ' + LABEL[d.cls] : '')) + newer +
+      row('State', NAMES[d.st]) + row('Land', land) + '</table>' +
+      '<div class="pbtns"><button class="pb sav' + (saved.has(d.i) ? ' on' : '') + '">' + (saved.has(d.i) ? '★ Saved' : '☆ Save') + '</button>' +
+      '<button class="pb vis' + (visited.has(d.i) ? ' on' : '') + '">' + (visited.has(d.i) ? '✓ Visited' : 'Visited?') + '</button>' +
+      '<a class="pb" target="_blank" rel="noopener" href="' + gmaps(d) + '">' + PIN + 'Directions</a>' +
+      '<button class="pb more">More ›</button></div></div>';
+  }
+  function toggleMine(d, which) {
+    const set = which === 'sav' ? saved : visited;
+    set.has(d.i) ? set.delete(d.i) : set.add(d.i); saveSet(which === 'sav' ? 'wt-saved' : 'wt-visited', set);
+    document.querySelectorAll('.pb.' + which + ', .mybtn.' + which).forEach(b => {
+      const on = set.has(d.i); b.classList.toggle('on', on);
+      b.textContent = which === 'sav' ? (on ? '★ Saved' : '☆ Save') : (on ? '✓ Visited' : b.classList.contains('pb') ? 'Visited?' : 'Mark visited');
+    });
+    if (which === 'sav') restyle(); renderList();
   }
   function select(d, fly) {
     sel = d; restyle(); if (map.hasLayer(d.m) && d.m.bringToFront) d.m.bringToFront();
+    if (d.m.closeTooltip) d.m.closeTooltip();
     list.querySelectorAll('.it').forEach(el => el.classList.toggle('sel', +el.dataset.i === d.i));
+    if ($('detail').style.display === 'block') showDetail(d);   // keep an open panel in step
+    openPop(d, fly);
+  }
+  function showDetail(d) {
     const det = $('detail'); det.style.display = 'block';
     const lat = Math.abs(d.lat).toFixed(3) + '°' + (d.lat >= 0 ? 'N' : 'S'), lon = Math.abs(d.lon).toFixed(3) + '°' + (d.lon < 0 ? 'W' : 'E');
     const dist = distMi(d);
@@ -316,15 +343,26 @@
         (d.ss || d.moved ? '<div class="srccite">' + (d.ss ? 'Reading: ' + esc(SS_SRC[d.ss[3]] || '') : '') + (d.moved && (!d.ss || d.moved[2] !== d.ss[3]) ? (d.ss ? '<br>' : '') + 'Location: ' + esc(SS_SRC[d.moved[2]] || '') : '') + (/^(Water Quality Portal|Nevada Bureau|New Mexico Bureau)/.test(SS_SRC[(d.ss || d.moved)[d.ss ? 3 : 2]] || '') ? '' : ' · via the <a href="https://doi.org/10.5281/zenodo.8125526" target="_blank" rel="noopener">National Geothermal Data System</a> (CC BY 4.0)') + '</div>' : '') + '</td></tr>' +
       (dist != null ? '<tr><td>Distance from you</td><td>' + Math.round(dist).toLocaleString() + ' mi (straight line)</td></tr>' : '') +
       '</table><div class="gphoto" id="gphoto" hidden></div>' + (MEDIA[d.i] ? '<div class="about" id="about"><div class="ab-load">Loading description…</div></div>' : '') + '<a class="gbtn" target="_blank" rel="noopener" href="' + gmaps(d) + '">' + PIN + ' Open in Google Maps</a>';
-    det.querySelector('.mybtn.sav').onclick = e => { saved.has(d.i) ? saved.delete(d.i) : saved.add(d.i); saveSet('wt-saved', saved); e.currentTarget.classList.toggle('on', saved.has(d.i)); e.currentTarget.textContent = saved.has(d.i) ? '★ Saved' : '☆ Save'; restyle(); renderList(); };
-    det.querySelector('.mybtn.vis').onclick = e => { visited.has(d.i) ? visited.delete(d.i) : visited.add(d.i); saveSet('wt-visited', visited); e.currentTarget.classList.toggle('on', visited.has(d.i)); e.currentTarget.textContent = visited.has(d.i) ? '✓ Visited' : 'Mark visited'; renderList(); };
+    det.querySelector('.mybtn.sav').onclick = () => toggleMine(d, 'sav');
+    det.querySelector('.mybtn.vis').onclick = () => toggleMine(d, 'vis');
     if (MEDIA[d.i]) loadAbout(d);
     loadGooglePhoto(d);
-    det.querySelector('.x').onclick = () => { sel = null; det.style.display = 'none'; map.closePopup(); restyle(); list.querySelectorAll('.it.sel').forEach(e => e.classList.remove('sel')); setHash(''); };
+    det.querySelector('.x').onclick = () => { det.style.display = 'none'; if (!map._popup || !map.hasLayer(map._popup)) deselect(); };
+  }
+  function deselect() { sel = null; $('detail').style.display = 'none'; restyle(); list.querySelectorAll('.it.sel').forEach(e => e.classList.remove('sel')); setHash(''); }
+  function openPop(d, fly) {
     // On wider screens the panel floats over the left of the map: keep the spring and its popup clear of it.
     const panelW = () => { const a = document.querySelector('aside'); return (window.innerWidth > 760 && !app.classList.contains('max') && a) ? a.getBoundingClientRect().right - $('mapwrap').getBoundingClientRect().left : 0; };
     const pw = panelW();
-    const open = () => L.popup({offset:[0,-4], autoPan:true, autoPanPaddingTopLeft:[pw + 16, 16], closeButton:true}).setLatLng([d.lat, d.lon]).setContent(popupHtml(d)).openOn(map);
+    const open = () => {
+      const p = L.popup({offset:[0,-4], autoPan:true, autoPanPaddingTopLeft:[pw + 16, 70], autoPanPaddingBottomRight:[16, 16], closeButton:true, minWidth:230, maxWidth:300});
+      p._springI = d.i;
+      p.setLatLng([d.lat, d.lon]).setContent(popupHtml(d)).openOn(map);
+      const el = p.getElement(); if (!el) return;
+      el.querySelector('.pb.sav').onclick = () => toggleMine(d, 'sav');
+      el.querySelector('.pb.vis').onclick = () => toggleMine(d, 'vis');
+      el.querySelector('.pb.more').onclick = () => { showDetail(d); const det = $('detail'); if (window.innerWidth <= 760) { map.closePopup(); setTimeout(() => det.scrollIntoView({behavior:'smooth', block:'start'}), 50); } };
+    };
     if (fly) {
       const z = Math.max(map.getZoom(), 11);
       const target = pw ? map.unproject(map.project([d.lat, d.lon], z).subtract([pw / 2, 0]), z) : L.latLng(d.lat, d.lon);
@@ -332,7 +370,8 @@
     } else open();
     setHash('spring-' + d.i);
   }
-  map.on('popupclose', () => {});
+  // Closing a spring's popup (without the full panel open) clears the selection.
+  map.on('popupclose', e => { if (sel && e.popup._springI === sel.i && $('detail').style.display !== 'block') deselect(); });
 
   // ---------- Description & photo (Wikipedia / Wikimedia Commons) ----------
   const mediaCache = {};
