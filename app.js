@@ -87,7 +87,7 @@
     baseLayer.bringToBack();
     curBM = b;
     grid.querySelectorAll('.sw').forEach(s => s.classList.toggle('on', s.dataset.id === b.id));
-    if (userPicked) { $('ovLabels').checked = !!b.imagery; }
+    if (userPicked) { $('ovLabels').checked = !!b.dark; }   // roads and place names: on with the dark map, off with the others
     applyLabels();
     if (!keep) store.set('wt-bm2', b.id);
   }
@@ -103,7 +103,7 @@
   {
     const saved = store.get('wt-bm2', 'dark');
     const b = BASEMAPS.find(x => x.id === saved) || BASEMAPS[0];
-    $('ovLabels').checked = !!b.imagery;
+    $('ovLabels').checked = !!b.dark;
     setBM(b.id, false);
   }
 
