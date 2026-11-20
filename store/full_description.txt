@@ -27,8 +27,8 @@ The soaking estimate is the app's own judgement from public information. Always 
 
 OFFICIAL DATA SOURCES
 • Spring locations and temperatures: NOAA, Thermal Springs List for the United States (1980), Key to Geophysical Records Documentation No. 12
-https://repository.library.noaa.gov/view/noaa/13426
-https://www.ncei.noaa.gov/node/2320
+https://catalog.data.gov/dataset/thermal-springs-list-for-the-united-states-ncei-accession-0303600
+https://www.osti.gov/biblio/6737326
 • Spring temperature readings: Water Quality Portal (USGS, EPA, and partner agencies)
 https://www.waterqualitydata.us/
 • Named springs: USGS Geographic Names Information System (GNIS)
