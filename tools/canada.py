@@ -67,13 +67,29 @@ try:
 except Exception as e:
     OUT['notes'].append('cgn csv failed: %r' % e); print('cgn csv failed', e)
 
+# 2b. OpenStreetMap: natural=hot_spring features in Canada (names, sometimes temperature)
+OQ = '[out:json][timeout:180];area["ISO3166-1"="CA"][admin_level=2]->.a;(node["natural"="hot_spring"](area.a);way["natural"="hot_spring"](area.a);node["leisure"="hot_spring"](area.a););out center tags;'
+OUT['osm'] = []
+for ep in ['https://overpass-api.de/api/interpreter', 'https://overpass.kumi.systems/api/interpreter', 'https://overpass.private.coffee/api/interpreter']:
+    try:
+        req = urllib.request.Request(ep, data=urllib.parse.urlencode({'data': OQ}).encode(), headers=UA)
+        with urllib.request.urlopen(req, timeout=240) as r:
+            js = json.loads(r.read())
+        for el in js.get('elements', []):
+            lat = el.get('lat') or (el.get('center') or {}).get('lat'); lon = el.get('lon') or (el.get('center') or {}).get('lon')
+            OUT['osm'].append({'id': el['type'][0] + str(el['id']), 'lat': lat, 'lon': lon, 'tags': el.get('tags', {})})
+        print('osm hot springs:', len(OUT['osm']), 'via', ep); break
+    except Exception as e:
+        OUT['notes'].append('osm %s failed: %r' % (ep, e)); print('osm failed', ep, e)
+
 # 3. GSC open files: text dumped for review (spring tables with temperatures)
 for tag, url in [('of6167', 'https://download-telecharger.services.geo.ca/pub/nrcan_rncan/publications/STPublications_PublicationsST/247/247765/of_6167.pdf'),
                  ('of6914', 'https://publications.gc.ca/collections/collection_2013/rncan-nrcan/M183-2-6914-eng.pdf')]:
     try:
         pdf = get(url, 240)
+        print(tag, 'bytes', len(pdf), 'head', pdf[:60])
         open('/tmp/%s.pdf' % tag, 'wb').write(pdf)
-        subprocess.run(['pdftotext', '-layout', '/tmp/%s.pdf' % tag, 'data/ca_%s.txt' % tag], check=True)
+        p = subprocess.run(['pdftotext', '-layout', '/tmp/%s.pdf' % tag, 'data/ca_%s.txt' % tag], capture_output=True, text=True); print(tag, 'pdftotext', p.returncode, p.stderr[:300])
         print(tag, 'text lines:', sum(1 for _ in open('data/ca_%s.txt' % tag)))
     except Exception as e:
         OUT['notes'].append('%s failed: %r' % (tag, e)); print(tag, 'failed', e)
