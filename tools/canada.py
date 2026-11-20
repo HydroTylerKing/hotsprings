@@ -9,7 +9,7 @@ Output: data/ca_raw.json (+ data/ca_of6167.txt for review)
 """
 import io, json, re, subprocess, sys, time, zipfile, urllib.request, urllib.parse
 
-UA = {'User-Agent': 'hotsprings-map (github.com/HydroTylerKing/hotsprings)'}
+UA = {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36 hotsprings-map'}
 OUT = {'yukon': [], 'cgndb': [], 'notes': []}
 
 def get(url, timeout=90):
@@ -62,15 +62,37 @@ for pv in PROV:
         print('cgndb', pv, skip, len(items), flush=True)
         if len(items) < 1000: break
         skip += 1000; time.sleep(0.5)
+# name searches: hot springs filed under other feature types (localities, parks, etc.)
+for term in ['hot*', 'warm*', 'thermal*', '*hotspring*', '*chaude*', 'radium*', 'miette*', 'liard*']:
+    skip = 0
+    while True:
+        q = urllib.parse.urlencode({'q': term, 'num': 1000, 'skip': skip})
+        try:
+            d = json.loads(get('https://geogratis.gc.ca/services/geoname/en/geonames.json?' + q))
+        except Exception as e:
+            OUT['notes'].append('cgndb q %s failed: %r' % (term, e)); print('cgndb q fail', term, e); break
+        items = d.get('items', [])
+        for it in items:
+            if it['id'] in seen: continue
+            seen.add(it['id'])
+            OUT['cgndb'].append({'id': it['id'], 'name': it.get('name'), 'lat': it.get('latitude'), 'lon': it.get('longitude'),
+                                 'prov': (it.get('province') or {}).get('code'), 'generic': (it.get('generic') or {}).get('code'),
+                                 'generic_t': (it.get('generic') or {}).get('term'), 'concise': (it.get('concise') or {}).get('code'),
+                                 'status': (it.get('status') or {}).get('code'), 'location': it.get('location'), 'via': term})
+        print('cgndb q', term, skip, len(items), flush=True)
+        if len(items) < 1000: break
+        skip += 1000; time.sleep(0.5)
 print('cgndb springs:', len(OUT['cgndb']))
 
-# 3. GSC Open File 6167 text for review
-try:
-    pdf = get('https://download-telecharger.services.geo.ca/pub/nrcan_rncan/publications/STPublications_PublicationsST/247/247765/of_6167.pdf', 180)
-    open('/tmp/of6167.pdf', 'wb').write(pdf)
-    subprocess.run(['pdftotext', '-layout', '/tmp/of6167.pdf', 'data/ca_of6167.txt'], check=True)
-    print('of6167 text lines:', sum(1 for _ in open('data/ca_of6167.txt')))
-except Exception as e:
-    OUT['notes'].append('of6167 failed: %r' % e); print('of6167 failed', e)
+# 3. GSC open files: text dumped for review (spring tables with temperatures)
+for tag, url in [('of6167', 'https://download-telecharger.services.geo.ca/pub/nrcan_rncan/publications/STPublications_PublicationsST/247/247765/of_6167.pdf'),
+                 ('of6914', 'https://download-telecharger.services.geo.ca/pub/nrcan_rncan/publications/STPublications_PublicationsST/291/291488/gid_291488.pdf')]:
+    try:
+        pdf = get(url, 240)
+        open('/tmp/%s.pdf' % tag, 'wb').write(pdf)
+        subprocess.run(['pdftotext', '-layout', '/tmp/%s.pdf' % tag, 'data/ca_%s.txt' % tag], check=True)
+        print(tag, 'text lines:', sum(1 for _ in open('data/ca_%s.txt' % tag)))
+    except Exception as e:
+        OUT['notes'].append('%s failed: %r' % (tag, e)); print(tag, 'failed', e)
 
 json.dump(OUT, open('data/ca_raw.json', 'w'), indent=0, ensure_ascii=False)

@@ -18,6 +18,6 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
-          git add data/ca_raw.json data/ca_of6167.txt 2>/dev/null || true
+          git add data/ca_raw.json; git add data/ca_of*.txt 2>/dev/null || true
           git diff --cached --quiet || git commit -m "Update Canadian springs raw data"
           git pull --rebase && git push
