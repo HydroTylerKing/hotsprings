@@ -5,7 +5,7 @@ Sources
   2. Canadian Geographical Names Database (CGNDB) via the GeoNames API: features whose generic term is
      Hotspring / Hot Spring (code 1152) and other springs named hot/warm. Open Government Licence - Canada.
   3. GSC Open File 6167 (Grasby et al. 2009) PDF: text dumped for review (spring table with temperatures).
-Output: data/ca_raw.json (+ data/ca_of6167.txt for review)
+Output: data/ca_raw.json (small) (+ data/ca_of6167.txt for review)
 """
 import io, json, re, subprocess, sys, time, zipfile, urllib.request, urllib.parse
 
@@ -40,53 +40,36 @@ try:
 except Exception as e:
     OUT['notes'].append('yukon failed: %r' % e); print('yukon failed', e)
 
-# 2. CGNDB springs (concise type SPRG), per province, paged
-PROV = ['59', '48', '60', '61', '47', '46', '35', '24', '13', '12', '11', '10', '62']
-seen = set()
-for pv in PROV:
-    skip = 0
-    while True:
-        q = urllib.parse.urlencode({'concise': 'SPRG', 'province': pv, 'num': 1000, 'skip': skip})
-        try:
-            d = json.loads(get('https://geogratis.gc.ca/services/geoname/en/geonames.json?' + q))
-        except Exception as e:
-            OUT['notes'].append('cgndb %s skip %d failed: %r' % (pv, skip, e)); print('cgndb fail', pv, e); break
-        items = d.get('items', [])
-        for it in items:
-            if it['id'] in seen: continue
-            seen.add(it['id'])
-            OUT['cgndb'].append({'id': it['id'], 'name': it.get('name'), 'lat': it.get('latitude'), 'lon': it.get('longitude'),
-                                 'prov': (it.get('province') or {}).get('code'), 'generic': (it.get('generic') or {}).get('code'),
-                                 'generic_t': (it.get('generic') or {}).get('term'), 'status': (it.get('status') or {}).get('code'),
-                                 'location': it.get('location')})
-        print('cgndb', pv, skip, len(items), flush=True)
-        if len(items) < 1000: break
-        skip += 1000; time.sleep(0.5)
-# name searches: hot springs filed under other feature types (localities, parks, etc.)
-for term in ['hot*', 'warm*', 'thermal*', '*hotspring*', '*chaude*', 'radium*', 'miette*', 'liard*']:
-    skip = 0
-    while True:
-        q = urllib.parse.urlencode({'q': term, 'num': 1000, 'skip': skip})
-        try:
-            d = json.loads(get('https://geogratis.gc.ca/services/geoname/en/geonames.json?' + q))
-        except Exception as e:
-            OUT['notes'].append('cgndb q %s failed: %r' % (term, e)); print('cgndb q fail', term, e); break
-        items = d.get('items', [])
-        for it in items:
-            if it['id'] in seen: continue
-            seen.add(it['id'])
-            OUT['cgndb'].append({'id': it['id'], 'name': it.get('name'), 'lat': it.get('latitude'), 'lon': it.get('longitude'),
-                                 'prov': (it.get('province') or {}).get('code'), 'generic': (it.get('generic') or {}).get('code'),
-                                 'generic_t': (it.get('generic') or {}).get('term'), 'concise': (it.get('concise') or {}).get('code'),
-                                 'status': (it.get('status') or {}).get('code'), 'location': it.get('location'), 'via': term})
-        print('cgndb q', term, skip, len(items), flush=True)
-        if len(items) < 1000: break
-        skip += 1000; time.sleep(0.5)
-print('cgndb springs:', len(OUT['cgndb']))
+# 2. CGNDB: the full pre-packaged national CSV (weekly), filtered here to names that mention hot/warm/thermal springs
+import csv, html
+HOT = re.compile(r'\b(hot|warm|thermal|chaudes?|hotsprings?|hotspring)\b', re.I)
+try:
+    base = 'https://ftp.maps.canada.ca/pub/nrcan_rncan/vector/geobase_cgn_toponyme/prov_csv_eng/'
+    listing = get(base).decode('utf8', 'replace')
+    files = sorted(set(re.findall(r'href="([^"]+\.(?:zip|csv))"', listing, re.I)))
+    print('cgn files:', files)
+    pick = [f for f in files if re.search(r'canada', f, re.I)] or files
+    rows = []
+    for f in pick[:1]:
+        raw = get(base + f, 300)
+        if f.lower().endswith('.zip'):
+            zz = zipfile.ZipFile(io.BytesIO(raw)); name = [n for n in zz.namelist() if n.lower().endswith('.csv')][0]; raw = zz.read(name)
+        txt = raw.decode('utf-8-sig', 'replace')
+        rd2 = csv.DictReader(io.StringIO(txt))
+        print('cgn columns:', rd2.fieldnames)
+        for r in rd2:
+            nm = r.get('Geographical Name') or r.get('GEONAME') or r.get('Name') or ''
+            gen = r.get('Generic Term') or r.get('GENERIC') or ''
+            if HOT.search(nm) or 'hot spring' in gen.lower() or 'hotspring' in gen.lower():
+                rows.append(r)
+    OUT['cgndb'] = rows
+    print('cgn hot rows:', len(rows))
+except Exception as e:
+    OUT['notes'].append('cgn csv failed: %r' % e); print('cgn csv failed', e)
 
 # 3. GSC open files: text dumped for review (spring tables with temperatures)
 for tag, url in [('of6167', 'https://download-telecharger.services.geo.ca/pub/nrcan_rncan/publications/STPublications_PublicationsST/247/247765/of_6167.pdf'),
-                 ('of6914', 'https://download-telecharger.services.geo.ca/pub/nrcan_rncan/publications/STPublications_PublicationsST/291/291488/gid_291488.pdf')]:
+                 ('of6914', 'https://publications.gc.ca/collections/collection_2013/rncan-nrcan/M183-2-6914-eng.pdf')]:
     try:
         pdf = get(url, 240)
         open('/tmp/%s.pdf' % tag, 'wb').write(pdf)
