@@ -11,6 +11,10 @@ import io, json, re, subprocess, sys, time, zipfile, urllib.request, urllib.pars
 
 UA = {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36 hotsprings-map'}
 OUT = {'yukon': [], 'cgndb': [], 'notes': []}
+try:
+    PREV = json.load(open('data/ca_raw.json'))   # keep earlier results when a source fails this time
+except Exception:
+    PREV = {}
 
 def get(url, timeout=90):
     req = urllib.request.Request(url, headers=UA)
@@ -70,7 +74,7 @@ except Exception as e:
 # 2b. OpenStreetMap: natural=hot_spring features in Canada (names, sometimes temperature)
 OQ = '[out:json][timeout:180];area["ISO3166-1"="CA"][admin_level=2]->.a;(node["natural"="hot_spring"](area.a);way["natural"="hot_spring"](area.a);node["leisure"="hot_spring"](area.a););out center tags;'
 OUT['osm'] = []
-for ep in ['https://overpass-api.de/api/interpreter', 'https://overpass.kumi.systems/api/interpreter', 'https://overpass.private.coffee/api/interpreter']:
+for ep in ['https://overpass.kumi.systems/api/interpreter', 'https://overpass-api.de/api/interpreter', 'https://overpass.private.coffee/api/interpreter']:
     try:
         req = urllib.request.Request(ep, data=urllib.parse.urlencode({'data': OQ}).encode(), headers=UA)
         with urllib.request.urlopen(req, timeout=240) as r:
@@ -94,4 +98,6 @@ for tag, url in [('of6167', 'https://ftp.maps.canada.ca/pub/nrcan_rncan/publicat
     except Exception as e:
         OUT['notes'].append('%s failed: %r' % (tag, e)); print(tag, 'failed', e)
 
+for k in ('yukon', 'cgndb', 'osm'):
+    if not OUT.get(k) and PREV.get(k): OUT[k] = PREV[k]; print('kept previous', k)
 json.dump(OUT, open('data/ca_raw.json', 'w'), indent=0, ensure_ascii=False)
