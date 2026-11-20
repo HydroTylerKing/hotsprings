@@ -1,6 +1,6 @@
 # The Hot Springs Project
 
-A map of hot springs across the United States.
+A map of hot springs across the United States and Canada.
 
 An interactive map of US springs: the 1,661 thermal springs of NOAA's 1980 list (the data behind NOAA's retired NGDC hot springs viewer), thousands more from state geological surveys, the Nevada and New Mexico geological surveys and the Water Quality Portal, and an optional layer of about 33,000 named springs from USGS place names.
 
@@ -81,3 +81,14 @@ For springs at or above 90 °F, `data/recreation.json` (built by `tools/recreati
 Wikipedia articles near each spring are gathered in `data/rec_evidence.json` but not applied automatically (articles about former resorts read like current ones); articles about a spring itself were reviewed by hand.
 
 A third pass searched the web state by state and ran Google Places text searches near every unclassified spring at or above 90 °F (`tools/web_evidence.py`, run in GitHub Actions; results in `data/places_evidence.json`, only the place name, type, status, review count and location are kept). Matches were reviewed by hand and recorded in `tools/rec_judgement.py`.
+
+
+## Canadian springs
+
+About 90 Canadian springs come from three open sources, fetched by `tools/canada.py` (GitHub Actions, manual) into `data/ca_raw.json` and merged by `tools/canada_rows.py`:
+
+- Yukon Geological Survey, Geothermal Thermal Springs (names and measured temperatures for the Yukon, northern BC and the western NWT; Open Government Licence – Yukon). Springs on the Alaska side of the border are skipped.
+- Canadian Geographical Names Database (official hot-spring names; Open Government Licence – Canada).
+- OpenStreetMap `natural=hot_spring` (precise locations, some temperatures; ODbL).
+
+Points within 1.5 km are merged. Banff Upper Hot Springs and Cave and Basin are placed by hand. There is no land-ownership layer for Canada, and many Canadian springs have no published temperature yet. Soaking estimates for Canadian springs are judged by name in `tools/rec_judgement.py` (`CA`).

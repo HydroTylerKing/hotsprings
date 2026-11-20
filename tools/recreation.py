@@ -5,7 +5,7 @@ Keyed by "lat,lon" rounded to 3 decimals so it survives reordering of data/sprin
 Codes: D known soaking spot, commercial; W known soaking spot, wild; P possibly used, N unlikely or not allowed, U no evidence found."""
 import json, os, re, sys
 sys.path.insert(0, os.path.dirname(__file__))
-from rec_judgement import J
+from rec_judgement import J, CA
 S = json.load(open('data/springs.json'))['springs']
 E = json.load(open('data/rec_evidence.json')) if os.path.exists('data/rec_evidence.json') else {}
 NOPARK = re.compile(r"Yellowstone National Park|Lassen Volcanic|Hawai.i Volcanoes|Mount Rainier National Park|Wind Cave|Mammoth Cave|Valles Caldera|Craters of the Moon|Ash Meadows")
@@ -18,6 +18,11 @@ def put(r, code, why, src):
     if k in basis and RANK[basis[k]] <= RANK[src]: return          # two records at one spot: the better-founded call wins
     out[k] = [code, why]; basis[k] = src; why_src[src] = why_src.get(src, 0) + 1
 for i, r in enumerate(S):
+    if r[11] == 'C':   # Canada: judged by name; otherwise only temperature-based fallbacks (no land database north of the border)
+        if r[0] in CA: put(r, CA[r[0]][0], CA[r[0]][1], 'hand'); continue
+        if r[4] is None or r[4] < 90: continue
+        if r[4] >= 160: put(r, 'N', 'Scalding at the source, with no sign of soaking pools', 'fallback'); continue
+        put(r, 'P', 'Warm, probably on Crown land, but no sign of regular use was found', 'fallback'); continue
     if r[4] is None or r[4] < 90: continue
     if i in J:
         name, code, why = J[i]

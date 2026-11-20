@@ -1,6 +1,6 @@
-Not a government app: The Hot Springs Project is an independent app. It is not affiliated with, endorsed by, or acting for NOAA, the U.S. Geological Survey (USGS), the EPA, the National Park Service, or any federal, state, or tribal agency. It uses publicly released government data; the official sources are linked at the end of this description and on the app's About page.
+Not a government app: The Hot Springs Project is an independent app. It is not affiliated with, endorsed by, or acting for NOAA, the U.S. Geological Survey (USGS), the EPA, the National Park Service, Natural Resources Canada, Parks Canada, or any federal, state, provincial, territorial, or tribal agency. It uses publicly released government data; the official sources are linked at the end of this description and on the app's About page.
 
-Find a hot spring for your next soak, road trip, or geology outing. The Hot Springs Project maps about 6,000 thermal springs across the United States, each colored by water temperature on a smooth scale from cool blue to near-boiling red.
+Find a hot spring for your next soak, road trip, or geology outing. The Hot Springs Project maps about 6,000 thermal springs across the United States and Canada, each colored by water temperature on a smooth scale from cool blue to near-boiling red.
 
 FIND A PLACE TO SOAK
 • Known soaking spots stand out: a house icon for commercial ones (resorts, pools, bathhouses) and a hot-spring icon for wild ones
@@ -41,6 +41,10 @@ https://apps.nationalmap.gov/help/HowTo.htm
 https://www.osti.gov/dataexplorer/biblio/1223849
 • Nevada springs: Nevada Bureau of Mines and Geology geothermal database
 https://data.nbmg.unr.edu/Public/Geothermal/Data/GeothermalData/_metadata/HTML_Files/HotSpringsAndWells.html
+• Canadian springs: Yukon Geological Survey, Geothermal Thermal Springs
+https://open.yukon.ca/data/geothermal-thermal-springs
+• Canadian spring names: Natural Resources Canada, Canadian Geographical Names Database
+https://natural-resources.canada.ca/maps-tools-publications/maps/geographical-names-canada/download-geographical-names-data
 • Other state survey records: state geological surveys via the National Geothermal Data System (AASG-GDS)
 https://doi.org/10.5281/zenodo.8125526
 

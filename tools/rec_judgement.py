@@ -527,3 +527,39 @@ j(5551, 'Unnamed ', 'W', 'South Canyon Hot Springs (Google Places)')
 j(1383, 'Crater H', 'W', 'Saratoga Hot Springs on Utah Lake (Google Places)')
 j(1416, 'Lincoln ', 'W', 'Lincoln Point Warm Springs on Utah Lake (Google Places)')
 j(753, 'Twin Spr', 'D', 'Twin Springs Resort: hot spring soaking on the Middle Fork Boise River')
+
+
+# Canada: judged by spring name (Canadian rows are appended after the US ones, so indexes can shift)
+CA = {
+  'Radium Hot Springs': ('D', 'Radium Hot Springs pools, Kootenay National Park (Parks Canada)'),
+  'Banff Upper Hot Springs': ('D', 'Banff Upper Hot Springs pool (Parks Canada)'),
+  'Miette Hotsprings': ('D', 'Miette Hot Springs pools, Jasper National Park (Parks Canada)'),
+  'Fairmont Hot Springs': ('D', 'Fairmont Hot Springs Resort pools'),
+  'Harrison Hot Springs': ('D', 'Harrison Hot Springs resort and public pool'),
+  'Ainsworth Hot Springs': ('D', 'Ainsworth Hot Springs resort: pools and cave'),
+  'Halcyon Hot Springs': ('D', 'Halcyon Hot Springs resort'),
+  'Nakusp Hot Springs': ('D', 'Nakusp Hot Springs pools (village-owned)'),
+  'Albert Canyon Hot Spring': ('D', 'Canyon Hot Springs resort pools'),
+  'Takhini Hot Springs': ('D', 'Commercial hot-spring pools near Whitehorse (now Eclipse Nordic Hot Springs)'),
+  'Liard Hot Springs': ('D', 'Developed pools with boardwalk in Liard River Hot Springs Provincial Park (day-use fee)'),
+  'Cave and Basin': ('N', 'National historic site; bathing ended long ago'),
+  'Lussier Hot Springs': ('W', 'Rock pools by the Lussier River, Whiteswan Lake Provincial Park'),
+  'Ram Creek Hot Springs': ('W', 'Small wild pools above Ram Creek'),
+  'Halfway Hot Springs': ('W', 'Wild pools on the Halfway River near Nakusp (recreation site)'),
+  'Sloquet Hot Springs': ('W', 'Rustic pools and campground run by the Xa\'xtsa Nation (fee)'),
+  'August Jacob\'s Hot Spring': ('W', 'Rustic soaking tubs near Sloquet'),
+  'Skookumchuck Hot Spring': ('W', 'Rustic tubs at St. Agnes Well, run by the Skatin Nation (fee)'),
+  'Pitt River Hot Spring': ('W', 'Wild pools up Pitt Lake (boat access)'),
+  'Keyhole Hot Springs': ('W', 'Wild pools on the Lillooet River; seasonal closures for bears, so check first'),
+  'Meager Creek Hot Spring': ('N', 'Closed since the 2010 Mount Meager landslide'),
+  'Ramsay Hot Spring': ('W', 'Hot Springs Cove, Maquinna Marine Provincial Park (boat or floatplane, then boardwalk)'),
+  'Eucott Bay Hot Springs': ('W', 'Wild pool on the coast (boat access)'),
+  'Tallheo Hot Springs': ('W', 'Wild pools near Bella Coola (boat access)'),
+  'Bishop Bay Hot Springs': ('W', 'Rustic bathhouse built by volunteers (boat access)'),
+  'Weewanie Hot Springs': ('W', 'Small bathhouse in Weewanie Hot Springs Provincial Park (boat access)'),
+  'Mist Mountain Hot Springs': ('W', 'Small wild pools high on Mist Mountain, Kananaskis'),
+  'Kraus Hotsprings': ('W', 'Riverside soaking on the South Nahanni, Nahanni National Park Reserve'),
+  'Rabbitkettle Hotsprings': ('N', 'Tufa mounds in Nahanni National Park Reserve; guided walks only, no soaking'),
+  'Grayling River Hot Springs': ('N', 'Ecological reserve'),
+  'Yat’aayi Héen': ('W', 'Warm Bay near Atlin, a local swimming spot'),
+}

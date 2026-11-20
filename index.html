@@ -14,7 +14,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="theme-color" content="#f2f0e4">
 <link rel="stylesheet" href="vendor/leaflet/leaflet.css">
-<link rel="stylesheet" href="style.css?v=32">
+<link rel="stylesheet" href="style.css?v=33">
 </head>
 <body>
 <header>
@@ -52,7 +52,7 @@
     <form class="controls" id="controls" hidden autocomplete="off" onsubmit="return false">
       <input type="search" id="q" placeholder="Search by name (e.g. Burgdorf, Chena)…" autocomplete="off">
       <div class="row">
-        <select id="state"><option value="">All states</option></select>
+        <select id="state"><option value="">All states and provinces</option></select>
         <select id="sort"><option value="name">Sort: name</option><option value="hot">Sort: hottest</option><option value="cold">Sort: coolest</option><option value="near">Sort: nearest to me</option></select>
       </div>
       <select id="land" title="Filter by land ownership (USGS PAD-US)">
@@ -74,6 +74,7 @@
         <option value="">Source: all springs</option>
         <option value="noaa">NOAA 1980 list only</option>
         <option value="added">Added from other sources</option>
+        <option value="ca">Canada</option>
         <option value="ss">With newer readings or locations</option>
       </select>
       <select id="mine" title="Your saved and visited springs">
@@ -87,7 +88,7 @@
     </form>
     <div id="detail"></div>
     <div class="panel-h"><button class="fold" id="rfold" aria-expanded="false" aria-controls="list"><span class="chev">▸</span> Results</button><span><span id="count"></span><button class="maxbtn" id="maxbtn" title="Expand the results table">⤢ Expand</button></span></div>
-    <div class="thead"><span></span><span>Name</span><span>State</span><span>°F</span><span>°C</span><span>Class</span><span>Land</span><span>USGS quadrangle</span><span class="dcol">Distance</span><span></span><span></span></div>
+    <div class="thead"><span></span><span>Name</span><span>State/prov.</span><span>°F</span><span>°C</span><span>Class</span><span>Land</span><span>USGS quadrangle</span><span class="dcol">Distance</span><span></span><span></span></div>
     <div id="list"></div>
     <div class="foot">1,661 springs from the <i>Thermal Springs List for the United States</i> (NOAA, 1980), plus springs, newer readings and locations from state geological surveys (National Geothermal Data System, CC BY 4.0), the Nevada Bureau of Mines and Geology, the New Mexico Bureau of Geology (CC BY 4.0) and the Water Quality Portal; named springs from USGS place names. See About for full credits. Many springs are on private or closed land; check access before you go. Land ownership is from USGS PAD-US 4.1, checked at each listed location — older coordinates can be off, so confirm on a map before you go.</div>
   </aside>
@@ -96,19 +97,20 @@
   <button class="ab-close" id="aboutClose" title="Close" aria-label="Close">✕</button>
   <img class="ab-logo" src="assets/logo-wordmark.png?v=5" alt="The Hot Springs Project">
   <h2 id="aboutTitle">About this map</h2>
-  <p>This map was inspired by NOAA's former hot springs viewer, which the National Geophysical Data Center ran until it was retired in 2025. It shows all 1,661 thermal springs in the <i>Thermal Springs List for the United States</i>, compiled by Berry, Grim and Ikelman for NOAA in 1980, plus thousands more springs, hot to cool, from state geological surveys and the Water Quality Portal, with newer temperature readings and more precise locations where those sources have them. A separate <b>Named springs</b> layer (in the legend) adds about 33,000 springs from USGS place names. Use it to find a warm soak near your next trip, see which springs sit on public land, and jump straight to directions.</p>
+  <p>This map was inspired by NOAA's former hot springs viewer, which the National Geophysical Data Center ran until it was retired in 2025. It shows all 1,661 thermal springs in the <i>Thermal Springs List for the United States</i>, compiled by Berry, Grim and Ikelman for NOAA in 1980, plus thousands more springs, hot to cool, from state geological surveys and the Water Quality Portal, and about 90 Canadian springs from the Yukon Geological Survey, Natural Resources Canada's place names and OpenStreetMap, with newer temperature readings and more precise locations where those sources have them. A separate <b>Named springs</b> layer (in the legend) adds about 33,000 springs from USGS place names. Use it to find a warm soak near your next trip, see which springs sit on public land, and jump straight to directions.</p>
   <h3>What you can do</h3>
   <ul>
     <li>Browse springs on topo, satellite, street or shaded-relief maps.</li>
     <li>Filter by name, state, minimum temperature and land ownership, or sort by distance from you.</li>
     <li>Tap a spring for its temperature, location, land manager, photos and a description, with a one-tap link to Google Maps.</li>
   </ul>
-  <p class="disclaim"><b>Not a government app.</b> The Hot Springs Project is an independent app. It is not affiliated with, endorsed by or acting for NOAA, the U.S. Geological Survey, the EPA, the National Park Service or any federal, state or tribal agency. It uses publicly released government data, linked below to the official sources.</p>
+  <p class="disclaim"><b>Not a government app.</b> The Hot Springs Project is an independent app. It is not affiliated with, endorsed by or acting for NOAA, the U.S. Geological Survey, the EPA, the National Park Service, Natural Resources Canada, Parks Canada or any federal, state, provincial, territorial or tribal agency. It uses publicly released government data, linked below to the official sources.</p>
   <h3>Where the information comes from</h3>
   <ul>
     <li><b>Springs:</b> NOAA Key to Geophysical Records Doc. No. 12 (1980), official copy at the <a href="https://repository.library.noaa.gov/view/noaa/13426" target="_blank" rel="noopener">NOAA Institutional Repository</a>.</li>
     <li><b>State survey springs, readings and locations:</b> state geological surveys via the National Geothermal Data System, republished as AASG-GDS (Zaffos and Richard, 2025, <a href="https://doi.org/10.5281/zenodo.8125526" target="_blank" rel="noopener">doi:10.5281/zenodo.8125526</a>, CC BY 4.0). Each spring lists its original source.</li>
     <li><b>Nevada springs and readings:</b> Nevada Bureau of Mines and Geology <a href="https://data.nbmg.unr.edu/Public/Geothermal/Data/GeothermalData/_metadata/HTML_Files/HotSpringsAndWells.html" target="_blank" rel="noopener">geothermal database</a> (Hot Springs and Wells), with each record's original reference.</li>
+    <li><b>Canadian springs:</b> Yukon Geological Survey <a href="https://open.yukon.ca/data/geothermal-thermal-springs" target="_blank" rel="noopener">Geothermal Thermal Springs</a> (names and measured temperatures for the Yukon, northern BC and the western NWT; Open Government Licence – Yukon), the <a href="https://natural-resources.canada.ca/maps-tools-publications/maps/geographical-names-canada/download-geographical-names-data" target="_blank" rel="noopener">Canadian Geographical Names Database</a> (Natural Resources Canada; Open Government Licence – Canada) and OpenStreetMap hot springs (© OpenStreetMap contributors, ODbL). Banff Upper Hot Springs and Cave and Basin are placed by hand. There is no land-ownership layer for Canada, and many Canadian springs have no published temperature yet.</li>
     <li><b>New Mexico springs and readings:</b> New Mexico Bureau of Geology and Mineral Resources, springs discharging above 30 °C (Kelley, 2015, <a href="https://doi.org/10.15121/1223849" target="_blank" rel="noopener">doi:10.15121/1223849</a>, CC BY 4.0).</li>
     <li><b>Spring temperatures:</b> the <a href="https://www.waterqualitydata.us/" target="_blank" rel="noopener">Water Quality Portal</a> (USGS, EPA, National Park Service and other agencies), newest reading at each spring site.</li>
     <li><b>Soaking estimate</b> (springs 90 °F and warmer): this app's own judgement of whether people soak there. <i>Known soaking spots</i> include both commercial ones (resorts, pools, bathhouses) and wild ones (undeveloped pools people use); other springs are marked possibly used, unlikely or not allowed, or no evidence found. It is based on widely known soaking spots, state-by-state web searches, Google Maps place listings, Wikipedia, land status and temperature, and is a guide only: conditions, access and rules change.</li>
@@ -126,6 +128,6 @@
 </dialog>
 <script src="vendor/leaflet/leaflet.js"></script>
 <script src="config.js?v=13"></script>
-<script src="app.js?v=60"></script>
+<script src="app.js?v=61"></script>
 </body>
 </html>
