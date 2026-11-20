@@ -1,0 +1,12 @@
+https://repository.library.noaa.gov/view/noaa/13426/noaa_13426_DS2.pdf
+https://www.ncei.noaa.gov/access/metadata/landing-page/bin/iso?id=gov.noaa.ngdc.mgg.geothermal:G01108
+https://www.ncei.noaa.gov/products/natural-hazards
+https://www.usgs.gov/tools/geographic-names-information-system-gnis
+https://www.usgs.gov/programs/gap-analysis-project/science/pad-us-data-overview
+https://www.usgs.gov/programs/national-geospatial-program/national-map
+https://www.epa.gov/waterdata/water-quality-data
+https://gdr.openei.org/submissions/478
+https://www.osti.gov/biblio/1223849
+https://nbmg.unr.edu/
+https://geoinfo.nmt.edu/
+https://www.waterqualitydata.us/beta/
