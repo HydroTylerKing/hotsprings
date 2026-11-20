@@ -4142,7 +4142,393 @@
 }
 ],
 "notes": [
+"osm https://overpass-api.de/api/interpreter failed: <HTTPError 406: 'Not Acceptable'>",
 "of6167 failed: <HTTPError 404: 'Not Found'>",
-"of6914 failed: CalledProcessError(1, ['pdftotext', '-layout', '/tmp/of6914.pdf', 'data/ca_of6914.txt'])"
+"of6914 failed: FileNotFoundError(2, 'No such file or directory')"
+],
+"osm": [
+{
+"id": "n764750454",
+"lat": 49.9651896,
+"lon": -122.4317577,
+"tags": {
+"alt_name": "T'sek Hot Spring",
+"leisure": "hot_spring",
+"name": "Skookumchuck Hot Spring",
+"natural": "spring",
+"source": "user",
+"wheelchair": "limited"
+}
+},
+{
+"id": "n1186023049",
+"lat": 49.3059907,
+"lon": -121.7962457,
+"tags": {
+"name": "Harrison Hot Springs",
+"natural": "hot_spring",
+"source": "NRCan-CanVec-7.0"
+}
+},
+{
+"id": "n1712270486",
+"lat": 60.8787556,
+"lon": -135.3591458,
+"tags": {
+"leisure": "hot_spring",
+"name": "Takhini Hot Spring",
+"natural": "spring"
+}
+},
+{
+"id": "n1886258484",
+"lat": 50.547016,
+"lon": -114.891619,
+"tags": {
+"ele": "2315",
+"name": "Mist Mountain Hot Springs",
+"natural": "hot_spring"
+}
+},
+{
+"id": "n2014760004",
+"lat": 50.4339291,
+"lon": -117.853873,
+"tags": {
+"alt_name": "St. Leon Creek Hot Springs",
+"drinking_water": "no",
+"intermittent": "no",
+"leisure": "hot_spring",
+"name": "St. Leon Hot Springs",
+"natural": "spring",
+"tourism": "attraction"
+}
+},
+{
+"id": "n2014764540",
+"lat": 50.5047677,
+"lon": -117.7860662,
+"tags": {
+"name": "Halfway Hot Springs",
+"natural": "hot_spring"
+}
+},
+{
+"id": "n2014764605",
+"lat": 50.5038731,
+"lon": -117.7896395,
+"tags": {
+"leisure": "hot_spring",
+"name": "Halfway Hot Springs",
+"natural": "spring"
+}
+},
+{
+"id": "n2014764665",
+"lat": 50.5039242,
+"lon": -117.7885755,
+"tags": {
+"leisure": "hot_spring",
+"name": "(flooded in high water)",
+"natural": "spring"
+}
+},
+{
+"id": "n3470089659",
+"lat": 50.6668636,
+"lon": -123.4601061,
+"tags": {
+"name": "Keyhole Hot Springs",
+"natural": "hot_spring",
+"note": "Three pools, lowest occasionally submerged in main river. Slippy, tricky access.",
+"source": "http://whistlerhiatus.com/driving/keyhole-hot-springs-100k.html",
+"source_1": "local knowledge",
+"wheelchair": "no",
+"wikidata": "Q19460620",
+"wikipedia": "en:Boulder Creek (Lillooet River tributary)"
+}
+},
+{
+"id": "n4224828373",
+"lat": 49.9692355,
+"lon": -114.8980391,
+"tags": {
+"name": "Line Creek Sulphur Springs",
+"natural": "hot_spring"
+}
+},
+{
+"id": "n4740645149",
+"lat": 49.7301277,
+"lon": -122.3270488,
+"tags": {
+"leisure": "hot_spring",
+"name": "Sloquet Hot Springs",
+"natural": "spring",
+"temperature": "67",
+"website": "https://www.xaxtsa.ca/sloquet-hot-springs",
+"wikidata": "Q24190653",
+"wikipedia": "en:Sloquet Hot Springs"
+}
+},
+{
+"id": "n6662923889",
+"lat": 52.2054631,
+"lon": -126.9375691,
+"tags": {
+"description": "4m from shore",
+"name": "Tallheo Hot Springs",
+"natural": "hot_spring",
+"tourism": "attraction",
+"wikidata": "Q17041227",
+"wikipedia": "en:Tallheo Hot Springs"
+}
+},
+{
+"id": "n7039396894",
+"lat": 50.5742873,
+"lon": -123.466503,
+"tags": {
+"description": "The Recreation Site is closed.",
+"drinking_water": "no",
+"intermittent": "no",
+"name": "Meager Creek Hot Spring",
+"natural": "hot_spring"
+}
+},
+{
+"id": "n8164491432",
+"lat": 49.8843857,
+"lon": -122.2585889,
+"tags": {
+"alt_name": "Frank Creek Hot Spring",
+"description": "Three man made rock pools adjacent to hot spring seep that comes out of a rock wall.",
+"intermittent": "no",
+"name": "August Jacob's Hot Spring",
+"natural": "hot_spring"
+}
+},
+{
+"id": "n8164494927",
+"lat": 49.6860697,
+"lon": -121.7419229,
+"tags": {
+"intermittent": "no",
+"name": "Clear Creek Hot Springs",
+"natural": "hot_spring"
+}
+},
+{
+"id": "n8429626385",
+"lat": 49.696103,
+"lon": -122.7089308,
+"tags": {
+"intermittent": "yes",
+"name": "Pitt River Hot Spring",
+"natural": "hot_spring",
+"note": "The pools flood in the spring after hot days, or strong rainfall.",
+"temperature": "53"
+}
+},
+{
+"id": "n9049473799",
+"lat": 49.8106142,
+"lon": -115.481816,
+"tags": {
+"intermittent": "no",
+"name": "Wildhorse Warm Springs",
+"natural": "hot_spring"
+}
+},
+{
+"id": "n10153691826",
+"lat": 50.5627935,
+"lon": -123.51481,
+"tags": {
+"alt_name": "No Good Warm Spring",
+"name": "No Good Hot Spring",
+"natural": "hot_spring",
+"note": "approx. location"
+}
+},
+{
+"id": "n10165128830",
+"lat": 52.4548189,
+"lon": -127.3122744,
+"tags": {
+"name": "Eucott Bay Hot Springs",
+"natural": "hot_spring",
+"source": "NRCan-CanVec-10.0"
+}
+},
+{
+"id": "n10165176135",
+"lat": 52.4973505,
+"lon": -127.2739414,
+"tags": {
+"name": "Nascall Hot Springs",
+"natural": "hot_spring",
+"source": "NRCan-CanVec-10.0"
+}
+},
+{
+"id": "n10270210513",
+"lat": 50.66797,
+"lon": -123.4606591,
+"tags": {
+"name": "Etta's Secret Spring",
+"natural": "hot_spring",
+"note": "Spring name is not official. This appears to be the most common name."
+}
+},
+{
+"id": "n10284577691",
+"lat": 54.3536105,
+"lon": -128.5379116,
+"tags": {
+"natural": "hot_spring"
+}
+},
+{
+"id": "n11414695880",
+"lat": 61.942936,
+"lon": -127.1808799,
+"tags": {
+"name": "Gahnîhthah",
+"natural": "hot_spring"
+}
+},
+{
+"id": "n12016066001",
+"lat": 51.4619555,
+"lon": -122.0681435,
+"tags": {
+"alt_name": "Canoe Creek Hot Spring",
+"intermittent": "no",
+"name": "Canoe Creek Warm Spring",
+"natural": "hot_spring"
+}
+},
+{
+"id": "n12552136208",
+"lat": 59.4313149,
+"lon": -126.1002333,
+"tags": {
+"fixme": "improve location within the lake",
+"leisure": "hot_spring",
+"natural": "spring"
+}
+},
+{
+"id": "n12599877862",
+"lat": 50.6641423,
+"lon": -123.5433895,
+"tags": {
+"intermittent": "no",
+"name": "Job Creek Warm Springs",
+"natural": "hot_spring",
+"temperature": "21"
+}
+},
+{
+"id": "n13159571043",
+"lat": 52.5754795,
+"lon": -131.4418432,
+"tags": {
+"name": "G̱andll K’in Gwaay.yaay",
+"natural": "hot_spring",
+"operator": "Haida Watchmen",
+"tourism": "attraction",
+"website": "https://parks.canada.ca/pn-np/bc/gwaiihaanas/culture/cultural-sites-culturels/cultural-sites-culturels-4"
+}
+},
+{
+"id": "n13535658843",
+"lat": 54.2033316,
+"lon": -129.874378,
+"tags": {
+"natural": "hot_spring"
+}
+},
+{
+"id": "n13975246403",
+"lat": 55.1409375,
+"lon": -129.3539375,
+"tags": {
+"name": "Hlgu Isquit Hot Springs",
+"natural": "hot_spring",
+"opening_hours": "Sa, Su 09:30-17:00; Mo-Fr 09:30-20:00",
+"phone": "+1-250-633-3038"
+}
+},
+{
+"id": "n14006479887",
+"lat": 49.3495959,
+"lon": -126.2599911,
+"tags": {
+"name": "Hot Springs",
+"natural": "hot_spring"
+}
+},
+{
+"id": "w1083047341",
+"lat": 50.5047001,
+"lon": -117.7861597,
+"tags": {
+"natural": "hot_spring"
+}
+},
+{
+"id": "w1083047342",
+"lat": 50.504705,
+"lon": -117.7862518,
+"tags": {
+"natural": "hot_spring"
+}
+},
+{
+"id": "w1083047343",
+"lat": 50.5047184,
+"lon": -117.7863844,
+"tags": {
+"natural": "hot_spring"
+}
+},
+{
+"id": "w1083051902",
+"lat": 50.5045583,
+"lon": -117.7871612,
+"tags": {
+"natural": "hot_spring"
+}
+},
+{
+"id": "w1123052659",
+"lat": 50.6348633,
+"lon": -116.0391478,
+"tags": {
+"addr:housenumber": "5420",
+"addr:street": "Highway 93",
+"fee": "yes",
+"leisure": "sports_centre",
+"name": "Radium Hot Springs",
+"name:fr": "Sources Thermales Radium",
+"name:zh": "镭温泉",
+"natural": "hot_spring",
+"operator": "Government of Canada",
+"operator:type": "government",
+"sport": "swimming",
+"website": "https://www.hotsprings.ca/radium",
+"wheelchair": "yes"
+}
+},
+{
+"id": "w1485524571",
+"lat": 60.8781535,
+"lon": -135.3587877,
+"tags": {
+"natural": "hot_spring"
+}
+}
 ]
 }
