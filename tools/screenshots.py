@@ -52,7 +52,11 @@ async def app_shot(b, dev, sc):
     await ctx.add_init_script("localStorage.setItem('wt-bm2','%s');localStorage.setItem('wt-leg','%s');"
                               % (bm, '1' if wants(acts, 'legend', wide) else '0'))
     pg = await ctx.new_page()
-    await pg.goto(SITE + '?shot=2' + hsh, wait_until='networkidle')
+    for attempt in range(2):
+        try:
+            await pg.goto(SITE + '?shot=2' + hsh, wait_until='load', timeout=60000); break
+        except Exception:
+            if attempt: raise
     await pg.wait_for_timeout(2500)
     if view:
         await pg.evaluate('([a,b,z]) => { window.wtMap.setView([a,b], z, {animate:false}); return 0; }', [view[0], view[1], view[2] + d['dz']])
@@ -70,7 +74,10 @@ async def app_shot(b, dev, sc):
     for s in js:
         await pg.evaluate(s); await pg.wait_for_timeout(300)
     await pg.add_style_tag(content='#gphoto{display:none!important}')
-    await pg.wait_for_load_state('networkidle')
+    try:
+        await pg.wait_for_load_state('networkidle', timeout=20000)
+    except Exception:
+        pass
     await pg.wait_for_timeout(4000)
     png = await pg.screenshot()
     await ctx.close()
