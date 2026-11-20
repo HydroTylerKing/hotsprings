@@ -188,7 +188,7 @@
     SS_SRC = json.ss_sources || [];
     S.forEach(d => { if (d.f != null) d.cls = clsOf(d.f); });   // class follows the reading; springs listed only as boiling/hot/warm keep that label
     S.forEach(d => { d.rec = REC[recKey(d)] || null; });
-    const sub = document.querySelector('header .sub'); if (sub) sub.textContent = S.length.toLocaleString() + ' springs across the US and Canada · data: NOAA Thermal Springs List (1980), state and territorial geological surveys, USGS and Natural Resources Canada';
+    const sub = document.querySelector('header .sub'); if (sub) sub.textContent = S.length.toLocaleString() + ' springs across North America · data: NOAA Thermal Springs List (1980), state and territorial geological surveys, USGS and Natural Resources Canada';
     S.forEach(d => { d.noaaNoTemp = !d.added && !!d.ss && d.ss[4] === 1; });   // NOAA listed no reading, so the state survey's is shown
     // markers (hotter drawn on top)
     S.forEach(d => { d.known = !!(d.rec && (d.rec[0] === 'D' || d.rec[0] === 'W')); });

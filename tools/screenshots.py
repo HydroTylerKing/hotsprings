@@ -22,8 +22,8 @@ DEVICES = {
 
 # key, headline, detail line, basemap, view for portrait, view for landscape, hash, actions
 SCENES = [
-    ('overview', '6,000 US hot springs', 'Colored by water temperature, from cool to near boiling',
-     'dark', [41.5, -114.5, 4.5], [40.5, -112.5, 5.5], '', ['legend']),
+    ('overview', '6,000 hot springs across North America', 'Colored by water temperature, from cool to near boiling',
+     'dark', [46.0, -117.0, 3.6], [47.0, -114.0, 4.3], '', ['legend']),
     ('soaks', 'Find a place to soak', 'Commercial and wild soaking spots marked at a glance',
      'esritopo', [44.3, -115.3, 8], [44.2, -115.4, 8.5], '', ['legend', 'soak', 'results:wide']),
     ('detail', 'Everything about a spring', 'Temperature, land manager, photos and directions',
