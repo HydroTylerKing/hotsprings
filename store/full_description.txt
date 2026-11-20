@@ -42,7 +42,7 @@ https://www.osti.gov/dataexplorer/biblio/1223849
 • Nevada springs: Nevada Bureau of Mines and Geology geothermal database
 https://data.nbmg.unr.edu/Public/Geothermal/Data/GeothermalData/_metadata/HTML_Files/HotSpringsAndWells.html
 • Canadian springs: Yukon Geological Survey, Geothermal Thermal Springs
-https://open.yukon.ca/data/geothermal-thermal-springs
+https://map-data.service.yukon.ca/geoyukon/Geological/Geothermal_Thermal_Springs/
 • Canadian spring names: Natural Resources Canada, Canadian Geographical Names Database
 https://natural-resources.canada.ca/maps-tools-publications/maps/geographical-names-canada/download-geographical-names-data
 • Other state survey records: state geological surveys via the National Geothermal Data System (AASG-GDS)
