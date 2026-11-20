@@ -27,7 +27,7 @@ header{background:var(--paper);color:var(--navy);padding:calc(6px + env(safe-are
 #about::backdrop{background:rgba(25,40,60,.55)}
 #about[open]{animation:abIn .2s ease-out}
 @keyframes abIn{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:none}}
-#about .ab-logo{display:block;width:200px;height:200px;margin:0 auto 8px}
+#about .ab-logo{display:block;width:auto;height:220px;margin:0 auto 8px}
 #about h2{text-align:center;color:var(--navy2);font-size:20px;margin:4px 0 10px;letter-spacing:.3px}
 #about h3{color:var(--navy2);font-size:14px;margin:16px 0 4px;text-transform:uppercase;letter-spacing:.5px}
 #about p,#about li{font-size:14px;line-height:1.5}
@@ -38,7 +38,7 @@ header{background:var(--paper);color:var(--navy);padding:calc(6px + env(safe-are
 #about .ab-gh:hover{background:var(--navy)}
 #about .ab-foot{text-align:center;color:var(--muted);font-size:12px;margin:8px 0 0}
 #about .ab-close{position:sticky;top:0;float:right;margin:-10px -12px 0 0;border:0;background:none;font-size:20px;color:var(--muted);cursor:pointer;padding:4px 8px}
-@media (max-width:760px){#about{padding:18px 18px 14px}#about .ab-logo{width:150px;height:150px}}
+@media (max-width:760px){#about{padding:18px 18px 14px}#about .ab-logo{width:auto;height:170px}}
 header h1{font-size:17px;margin:0;font-weight:800;letter-spacing:.6px;text-transform:uppercase;color:var(--navy2)}
 header .sub{font-size:11.5px;color:var(--muted)}
 .app{display:flex;height:calc(100% - 56px - env(safe-area-inset-top))}
