@@ -32,6 +32,8 @@ SCENES = [
      'dark', [41.5, -114.5, 4.5], [40.5, -112.5, 5.5], '', ['allspots', 'soak', 'hottest', 'max']),
     ('satellite', 'Topo, satellite and street maps', 'Save map areas to use offline',
      'imagery', [44.62, -110.75, 9.5], [44.6, -110.7, 10], '', ['legend:wide']),
+    ('offline', 'Works with no signal', 'Save trip areas; springs, maps and details work offline',
+     'usgstopo', None, None, '#spring-738', ['seedarea', 'offline']),
 ]
 
 def wants(acts, name, wide):
@@ -51,6 +53,9 @@ async def app_shot(b, dev, sc):
     await ctx.route('**/*', lambda r: r.abort() if 'googleapis.com' in r.request.url or 'gstatic.com/maps' in r.request.url else r.continue_())
     await ctx.add_init_script("localStorage.setItem('wt-bm2','%s');localStorage.setItem('wt-leg','%s');"
                               % (bm, '1' if wants(acts, 'legend', wide) else '0'))
+    if wants(acts, 'seedarea', wide):   # a saved trip area around the Salmon River near Stanley, Idaho
+        await ctx.add_init_script("""localStorage.setItem('wt-offline', JSON.stringify([{id:'shot1', name:'Salmon River near Stanley, Idaho',
+            b:[[44.15,-115.0],[44.35,-114.6]], zmin:9, zmax:15, count:3400, springs:11, bytes:46000000, date:'2026-11-20'}]))""")
     pg = await ctx.new_page()
     for attempt in range(2):
         try:
@@ -79,6 +84,9 @@ async def app_shot(b, dev, sc):
     except Exception:
         pass
     await pg.wait_for_timeout(4000)
+    if wants(acts, 'offline', wide):   # cut the connection once the map has loaded: the app shows its offline banner
+        await ctx.set_offline(True)
+        await pg.wait_for_timeout(1200)
     png = await pg.screenshot()
     await ctx.close()
     return png
