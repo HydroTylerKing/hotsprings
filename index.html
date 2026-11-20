@@ -14,7 +14,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="theme-color" content="#f2f0e4">
 <link rel="stylesheet" href="vendor/leaflet/leaflet.css">
-<link rel="stylesheet" href="style.css?v=30">
+<link rel="stylesheet" href="style.css?v=32">
 </head>
 <body>
 <header>
@@ -25,7 +25,7 @@
 <div class="app rc" id="app">
   <div id="mapwrap">
     <div id="map" aria-label="Map of US thermal springs"></div>
-    <div class="offline" id="offline" hidden>Offline · springs, filters and saved areas still work</div>
+    <div class="offline" id="offline" hidden role="status" aria-live="polite"><svg class="oi" viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M3 3l18 18M8.5 8.6A5 5 0 0 0 6 18h11m3.3-1.9A4 4 0 0 0 17 9.1a6 6 0 0 0-6.6-4"/></svg><div class="ot"><b id="offttl">You're offline</b><span id="offmsg"></span></div><button type="button" class="ob" id="offgo">Saved areas</button><button type="button" class="ox" id="offx" title="Hide" aria-label="Hide offline notice">✕</button></div>
     <div class="offpanel" id="offpanel" hidden role="dialog" aria-label="Save this area for offline"></div>
     <div class="bm" id="bm">
       <button id="bmbtn" aria-expanded="false"><svg width="15" height="15" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2 1 8l11 6 11-6zm-9.2 9.5L1 12.5l11 6 11-6-1.8-1-9.2 5zm0 4L1 16.5l11 6 11-6-1.8-1-9.2 5z"/></svg>Basemap</button>
@@ -126,6 +126,6 @@
 </dialog>
 <script src="vendor/leaflet/leaflet.js"></script>
 <script src="config.js?v=13"></script>
-<script src="app.js?v=58"></script>
+<script src="app.js?v=60"></script>
 </body>
 </html>

@@ -760,7 +760,29 @@
   $('installbtn').onclick = doInstall; $('aboutInstall').onclick = doInstall;
   window.addEventListener('appinstalled', () => { $('installbtn').hidden = true; $('aboutInstall').hidden = true; });
   if (standalone) $('installHelp').textContent = 'You\'re using the installed app. Spring data and the areas you\'ve viewed are saved for offline use.';
-  const netState = () => { $('offline').hidden = navigator.onLine; };
+  // Offline notice: a banner across the top of the map that says what still works; a short "Back online" note when the signal returns.
+  let backTimer = null;
+  function netState(e) {
+    const el = $('offline'), wrap = $('mapwrap');
+    clearTimeout(backTimer);
+    if (!navigator.onLine) {
+      const n = offOk ? areasGet().length : 0;
+      $('offttl').textContent = "You're offline";
+      $('offmsg').textContent = n
+        ? 'Springs and filters still work. Maps load in your ' + (n === 1 ? 'saved area' : n + ' saved areas') + '.'
+        : 'Springs and filters still work. Maps need a connection; save areas while online.';
+      $('offgo').hidden = !n;
+      el.classList.remove('back'); el.hidden = false; wrap.classList.add('isoff');
+      document.documentElement.style.setProperty('--offh', (el.offsetHeight + 8) + 'px');   // push map controls below the banner
+    } else if (!el.hidden && e && e.type === 'online') {
+      $('offttl').textContent = 'Back online'; $('offmsg').textContent = ''; $('offgo').hidden = true;
+      el.classList.add('back'); wrap.classList.remove('isoff');
+      backTimer = setTimeout(() => { el.hidden = true; el.classList.remove('back'); }, 3000);
+    } else { el.hidden = true; wrap.classList.remove('isoff'); }
+  }
+  $('offx').onclick = () => { $('offline').hidden = true; $('mapwrap').classList.remove('isoff'); };
+  $('offgo').onclick = e => { e.stopPropagation(); bmEl.classList.add('open'); $('bmbtn').setAttribute('aria-expanded', 'true'); $('offareas').scrollIntoView({block:'nearest'}); };
+  L.DomEvent.disableClickPropagation($('offline'));
   window.addEventListener('online', netState); window.addEventListener('offline', netState); netState();
 
   // ---------- About dialog (logo click, or #about link) ----------
