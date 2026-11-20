@@ -1,0 +1,5 @@
+https://map-data.service.yukon.ca/geoyukon/Geological/Geothermal_Thermal_Springs/
+https://app.geo.ca/en-ca/map-browser/record/0e63446e-6288-4bc6-a050-a5a07372ff24
+https://search.open.canada.ca/opendata/?search_text=Geothermal%20Thermal%20Springs
+https://open.canada.ca/data/en/dataset/e27c6eba-3c5d-4051-9db2-082dc6411c2c
+https://yukon.ca/en/science-and-natural-resources/geology/yukon-geological-survey
