@@ -89,7 +89,7 @@
     grid.querySelectorAll('.sw').forEach(s => s.classList.toggle('on', s.dataset.id === b.id));
     if (userPicked) { $('ovLabels').checked = !!b.imagery; }
     applyLabels();
-    if (!keep) store.set('wt-bm', b.id);
+    if (!keep) store.set('wt-bm2', b.id);
   }
   function applyLabels() {
     if ($('ovLabels').checked) labels.addTo(map); else map.removeLayer(labels);
@@ -101,7 +101,7 @@
   L.DomEvent.disableClickPropagation(bmEl); L.DomEvent.disableScrollPropagation(bmEl);
   L.DomEvent.disableClickPropagation($('legend'));
   {
-    const saved = store.get('wt-bm', 'usgstopo');
+    const saved = store.get('wt-bm2', 'dark');
     const b = BASEMAPS.find(x => x.id === saved) || BASEMAPS[0];
     $('ovLabels').checked = !!b.imagery;
     setBM(b.id, false);

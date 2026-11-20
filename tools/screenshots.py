@@ -23,13 +23,13 @@ DEVICES = {
 # key, headline, detail line, basemap, view for portrait, view for landscape, hash, actions
 SCENES = [
     ('overview', '6,000 US hot springs', 'Colored by water temperature, from cool to near boiling',
-     'esritopo', [41.5, -114.5, 4.5], [40.5, -112.5, 5.5], '', ['legend']),
+     'dark', [41.5, -114.5, 4.5], [40.5, -112.5, 5.5], '', ['legend']),
     ('soaks', 'Find a place to soak', 'Commercial and wild soaking spots marked at a glance',
      'esritopo', [44.3, -115.3, 8], [44.2, -115.4, 8.5], '', ['legend', 'soak', 'results:wide']),
     ('detail', 'Everything about a spring', 'Temperature, land manager, photos and directions',
      'esritopo', None, None, '#spring-791', ['legend:wide']),
     ('table', 'Sort and filter every spring', 'A full table of known soaking spots, hottest first',
-     'esritopo', [41.5, -114.5, 4.5], [40.5, -112.5, 5.5], '', ['allspots', 'soak', 'hottest', 'max']),
+     'dark', [41.5, -114.5, 4.5], [40.5, -112.5, 5.5], '', ['allspots', 'soak', 'hottest', 'max']),
     ('satellite', 'Topo, satellite and street maps', 'Save map areas to use offline',
      'imagery', [44.62, -110.75, 9.5], [44.6, -110.7, 10], '', ['legend:wide']),
 ]
@@ -49,7 +49,7 @@ async def app_shot(b, dev, sc):
     css = {'width': round(W / dpr), 'height': round((H - d['band']) / dpr)}
     ctx = await b.new_context(viewport=css, device_scale_factor=dpr, is_mobile=d['mobile'] and not wide, has_touch=d['mobile'])
     await ctx.route('**/*', lambda r: r.abort() if 'googleapis.com' in r.request.url or 'gstatic.com/maps' in r.request.url else r.continue_())
-    await ctx.add_init_script("localStorage.setItem('wt-bm','%s');localStorage.setItem('wt-leg','%s');"
+    await ctx.add_init_script("localStorage.setItem('wt-bm2','%s');localStorage.setItem('wt-leg','%s');"
                               % (bm, '1' if wants(acts, 'legend', wide) else '0'))
     pg = await ctx.new_page()
     await pg.goto(SITE + '?shot=2' + hsh, wait_until='networkidle')
