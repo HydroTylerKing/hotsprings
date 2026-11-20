@@ -83,8 +83,8 @@ for ep in ['https://overpass-api.de/api/interpreter', 'https://overpass.kumi.sys
         OUT['notes'].append('osm %s failed: %r' % (ep, e)); print('osm failed', ep, e)
 
 # 3. GSC open files: text dumped for review (spring tables with temperatures)
-for tag, url in [('of6167', 'https://download-telecharger.services.geo.ca/pub/nrcan_rncan/publications/STPublications_PublicationsST/247/247765/of_6167.pdf'),
-                 ('of6914', 'https://publications.gc.ca/collections/collection_2013/rncan-nrcan/M183-2-6914-eng.pdf')]:
+for tag, url in [('of6167', 'https://ftp.maps.canada.ca/pub/nrcan_rncan/publications/STPublications_PublicationsST/247/247765/of_6167.pdf'),
+                 ('of6914', 'https://ftp.maps.canada.ca/pub/nrcan_rncan/publications/STPublications_PublicationsST/291/291488/gid_291488.pdf')]:
     try:
         pdf = get(url, 240)
         print(tag, 'bytes', len(pdf), 'head', pdf[:60])
